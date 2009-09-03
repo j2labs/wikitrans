@@ -1,0 +1,16 @@
+WikiTrans :: User Profiles
+
+* languages of interest
+* native language
+* competency in other languages
+  - years
+  - written / spoken
+* location
+* email (optional, but useful for account recovery)
+* change / work lists
+* quality rating (per user, per language)
+* outside services
+  - amazon services (MT worker ID & hit ID)
+  - twitter and facebook based account generation
+* age
+* gender

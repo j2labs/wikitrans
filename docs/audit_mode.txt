@@ -1,0 +1,23 @@
+WikiTrans :: Audit Mode
+
+Who are they auditors?
+  1. bilingual
+  2. monolingual
+  3. super users
+
+What are they checking?
+  1. recent edits
+  2. tracking page subscriptions
+  3. recent mt only pages (editable)
+     - queue populated by hot-guessing
+	 - or by user request
+  4. checking translations of queries
+  5. inspected pages that get votes/comments
+  6. voting on best of alternative translations / or merging them
+     into consolidated text
+  7. Looking at all contributions by a given user, allowing a super
+     user to roll back or flag translation for super user review
+  8. Have there been changes to wikipedia's side?
+     - if so, allow users to decide if update is needed 
+     or allow a source side user to indicate they are meaning equivalent
+     or allow a bilingual user to update 

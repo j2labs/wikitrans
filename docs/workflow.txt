@@ -1,0 +1,44 @@
+WikiTrans :: Workflow
+
+1. User requests page
+  a. search term
+  b. on link inside page
+  c. selected page in curated list
+    i. cacheable in this case
+
+2A. Find english page
+  a. translate search query from englist to target lang
+  b. get interlan link. if it exists, translate and show
+
+2B. Translate target language query into english
+  a. query english wiki w/ english search.
+  b. translate snippets into target language
+  c. user selects some english page
+
+In both cases, search queries should be logged
+
+3. Translate the selected EN page into target language.
+  a. check cache to see if we've got help.
+    i. cache page
+    ii. cache sentence
+  b. check version between cached objects
+
+  Notes :: Consider displaying the translation incrementally as
+    translations complete. Maybe 2-pass system. Show dirty translation,
+	then update display
+
+4. Render the translation into the target language.
+   Optionally show ::
+     1. English source
+     2. Corresponding target language wiki page
+     3. Editing tools
+     4. Formatting (restoration likely required here)
+     5. Allow user to further edit
+
+5. Collect feedback from users regarding quality.
+   a. make it easy to report good or bad translations.
+   b. bad ones could be flaggable
+   c. optionally let them cycle through translations and vote on them
+   d. future :: let users interact directly w/ MT to explore alternate
+        translations
+   e. allow comments on translations at sentence level
