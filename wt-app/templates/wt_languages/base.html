@@ -1,0 +1,16 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block body_class %}blogs{% endblock %}
+
+{% block subnav %}
+    {% if user.is_authenticated %}
+        <ul>
+            <li><a href="{% url your_language_competancies %}">{% trans "Language Competancy" %}</a></li>
+            <li><a href="{% url new_language_competancy %}">{% trans "Add Competancy" %}</a></li>
+        </ul>
+    {% else %}
+        &nbsp;
+    {% endif %}
+{% endblock %}

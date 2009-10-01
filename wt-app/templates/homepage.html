@@ -1,0 +1,55 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+{% load ifsetting_tag %}
+
+{% block head_title %}{% trans "Welcome" %}{% endblock %}
+
+{% block tab_id %}id="home_tab"{% endblock %}
+
+{% block body %}
+    
+    <h1>{% trans "Welcome to WikiTrans" %}</h1>
+    
+    <p>
+        {% blocktrans %}
+		<b>WikiTrans</b> is web based system for enabling cross-lingual 
+		human / machine translations of documents, along with a full audit
+		trail. We intend to begin by enabling easy user based translation
+		of articles found on wikipedia from English to other languages to
+		generate pairs of sentences representing the same idea in multiple
+		languages. Upon successful completion the project will move focus
+		to statistical based language translations.
+        {% endblocktrans %}
+    </p>
+    
+    <p>
+        {% blocktrans %}
+        For more information about WikiTrans, see
+        <a href="http://www.cs.jhu.edu/~ccb/">Chris Callison-Burch</a>.
+        {% endblocktrans %}
+    </p>
+    
+    <h2>{% trans "About this project" %}</h2>
+    
+    <p>
+        {% blocktrans %}
+		This project is awesome!
+        {% endblocktrans %}
+    </p>
+    
+    <hr />
+    {% if user.is_authenticated %}
+        {% url what_next as what_next_url %}
+        <p class="what_next">{% blocktrans %}Wondering <a href="{{ what_next_url }}">What Next</a>?{% endblocktrans %}</p>
+    {% else %}
+        {% url acct_login as login_url %}
+        {% ifsetting ACCOUNT_OPEN_SIGNUP %}
+            {% url acct_signup as signup_url %}
+            <p>{% blocktrans %}You can <a href="{{ signup_url }}">Sign up</a> and <a href="{{ login_url }}">Log in</a> to try out the site.{% endblocktrans %}</p>
+        {% else %}
+            <p>{% blocktrans %}You can <a href="{{ login_url }}">Log in</a> to try out the site.{% endblocktrans %}</p>
+        {% endifsetting %}
+    {% endif %}
+    
+{% endblock %}
