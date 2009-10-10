@@ -47,7 +47,7 @@ def your_language_competancies(request, template_name="wt_languages/competancy_l
 #        return HttpResponseRedirect(reverse("your_langauge_competancies"))
 #
 #    return render_to_response(context_instance=RequestContext(request))
-
+#
 @login_required
 def new_language_competancy(request, form_class=LanguageCompetancyForm, template_name="wt_languages/new_competancy.html"):
     if request.method == "POST":

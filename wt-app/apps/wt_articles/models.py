@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.conf import settings
+from django.contrib.auth.models import User
 
 from wt_languages.models import LANGUAGE_CHOICES
 
@@ -14,12 +15,15 @@ else:
 
 class ArticleOfInterest(models.Model):
     title = models.CharField(_('Title'), max_length=255)
-    language = models.CharField(_('Language'),
-                                max_length=2,
-                                choices=LANGUAGE_CHOICES)
+    title_language = models.CharField(_('Title language'),
+                                      max_length=2,
+                                      choices=LANGUAGE_CHOICES)
+    target_language = models.CharField(_('Target language'),
+                                       max_length=2,
+                                       choices=LANGUAGE_CHOICES)
 
     def __unicode__(self):
-        return u"%s :: %s" % (self.title, self.language)
+        return u"%s :: %s" % (self.title, self.target_language)
 
 class SourceArticle(models.Model):
     title = models.CharField(_('Title'), max_length=255)
@@ -35,16 +39,27 @@ class SourceArticle(models.Model):
     def __unicode__(self):
         return u"%s :: %s" % (self.title, self.doc_id)
 
+    def determine_splitter(self, language):
+        for desc_pair in LANGUAGE_CHOICES:
+            if desc_pair[0] == language:
+                tokenizer = 'tokenizers/punkt/%s.pickle' % (desc_pair[1].lower())
+                break
+        try:
+            tokenizer = nltk.data.load(tokenizer)
+            return tokenizer
+        except:
+            raise AttributeError('%s not supported by sentence splitters' % (language))
+            
     def save(self):
+        # initial save for foriegn key based saves to work
         super(SourceArticle, self).save()
-        print "w00t"
         soup = BeautifulSoup(self.source_text)
         sentences = list()
         segment_id = 0
+        sent_detector = self.determine_splitter(self.language)
         for p in soup.findAll('p'):
             only_p = p.findAll(text=True)
             p_text = ''.join(only_p)
-            sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
             for sentence in sent_detector.tokenize(p_text.strip()):
                 s = SourceSentence(article=self, text=sentence, segment_id=segment_id)
                 segment_id += 1
@@ -52,7 +67,6 @@ class SourceArticle(models.Model):
         self.sentences_processed = True
         super(SourceArticle, self).save()
 
-    
 class SourceSentence(models.Model):
     article = models.ForeignKey(SourceArticle)
     text = models.CharField(_('Sentence Text'), max_length=1024)
@@ -61,23 +75,24 @@ class SourceSentence(models.Model):
     def __unicode__(self):
         return u"%s" % (self.text)
 
-#class TranslatedArticle(models.Model):
-#    article = ForeignKey(Article)
-#    target_language = 
-#    version
-#    list of translated sentences
-#
-#class TranslatedSentence(models.Model):
-#    segment id
-#    source sentence
-#    user
-#    date
-#    parent
-#    version
-#    best (look for better way) # assume best until someone says otherwise
-#
-#class DesiredArticles(models.Model):
-#    url
-#    sourcel language
-#    target language
-#    ranking
+class TranslatedArticle(models.Model):
+    article = models.ForeignKey(SourceArticle)
+    title = models.CharField(_('Title'), max_length=255)
+    target_language = models.CharField(_('Target language'),
+                                       max_length=2,
+                                       choices=LANGUAGE_CHOICES)
+    #version @@@ django-versioning
+    def __unicode__(self):
+        return '%s :: %s' % (article, title)
+
+class TranslatedSentence(models.Model):
+    segment_id = models.IntegerField(_('Segment ID'))
+    source_sentence = models.ForeignKey(SourceSentence)
+    user = models.ForeignKey(User)
+    translation_date = models.DateTimeField(_('Import Date'))
+    #version
+    best = models.BooleanField(_('Best sentence'))
+
+    def __unicode__(self):
+        return '%s :: %s' % (self.source_sentence, self.best)
+

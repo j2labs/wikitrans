@@ -28,11 +28,17 @@ COMPETENCY_RATING = (
 
 ENGLISH = 'en'
 URDU = 'ur'
-GIBBERISH = 'gb'
+SPANISH = 'es'
+GERMAN = 'de'
+FRENCH = 'fr'
+CZECH = 'cs'
 LANGUAGE_CHOICES = (
     (ENGLISH, 'English'),
     (URDU, 'Urdu'),
-    (GIBBERISH, 'Gibberish'),
+    (SPANISH, 'Spanish'),
+    (GERMAN, 'German'),
+    (FRENCH, 'French'),
+    (CZECH, 'Czech'),
 )
 
 TARGET = 't'

@@ -2,8 +2,8 @@ from wt_articles.models import ArticleOfInterest,SourceArticle,SourceSentence
 from django.contrib import admin
 
 class ArticleOfInterestAdmin(admin.ModelAdmin):
-    list_display = ('title', 'language',)
-    search_fields = ('title', 'language',)
+    list_display = ('title', 'title_language', 'target_language',)
+    search_fields = ('title', 'title_language', 'target_language',)
 
 class SourceArticleAdmin(admin.ModelAdmin):
     list_display = ('title','language',)
