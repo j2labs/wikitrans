@@ -1,4 +1,6 @@
-Looks good!  Once you get back from the wedding, could you also try getting the articles for JHU in a couple other languages, and running them through the sentence splitter:
+Near future
+===========
+Try getting the articles for JHU in a couple other languages, and running them through the sentence splitter:
 
 Spanish http://es.wikipedia.org/wiki/Universidad_Johns_Hopkins
 German  http://de.wikipedia.org/wiki/Johns_Hopkins_University
@@ -10,3 +12,7 @@ The next steps will be:
 * Design the simplest interface for editing the machine translated sentences, and incorporating the edited results back into our wikitrans database
 * Design a nicer interface for the editing, perhaps similar to Google's "suggest a better translation"
 * Have a mechanism for exporting the source documents and the (edited) translations in an XML format similar to the one used for the Urdu data that I sent to you.
+
+Distant future
+==============
+Audit functions and screens
