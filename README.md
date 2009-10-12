@@ -5,7 +5,7 @@ WikiTrans is a experiment in crowd sourcing for generating training data for sta
 
 WikiTrans is licensed under the [Apache Licence, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html)
 
-Information available [here](http://github.com/j2labs/wikipydia/).
+Information available [here](http://github.com/j2labs/wikitrans/).
 
 
 James Dennis <<jd@j2labs.net>>
