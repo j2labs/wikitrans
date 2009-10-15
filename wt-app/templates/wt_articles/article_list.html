@@ -1,16 +1,18 @@
-{% extends "wt_languages/base.html" %}
+{% extends "wt_articles/base.html" %}
 
 {% load i18n %}
 {% load theme_tags %}
 
-{% block head_title %}{% blocktrans %}Your Language Competancies{% endblocktrans %}{% endblock %}
+{% block head_title %}{% blocktrans %}Article List{% endblocktrans %}{% endblock %}
 
 {% block body %}
   
-    <h1>{% trans "Your Language Competanciess" %}</h1>
+    <h1>{% trans "Article List" %}</h1>
     
-    {% if competancies %}
-        <table cellpadding="5" cellspacing="0" border="0" class="blog-list" width="100%">
+    {% if articles %}
+	    <p>ARTICLES</p>
+		{% comment %}
+        <table cellpadding="5" cellspacing="0" border="0" class="lc-list" width="100%">
             <th>Language</th>
 			<th>Updated Date</th>
             <th>Rating</th>
@@ -25,12 +27,12 @@
 					<td>{{ competancy.experience }}</td>
 					<td>{{ competancy.translation_options }}</td>
                     <td width="50px" align="center">
-                        <a href="{% comment %}{% url blog_edit post.id %}{% endcomment %}">
+                        <a href="{% url language_competancy_edit competancy.id %}">
                             {% silk "pencil" %}
                         </a>
                     </td>
                     <td align="right">
-                        <form action="{% comment %}{% url blog_destroy post.id %}{% endcomment %}" method="POST">
+                        <form action="{% url language_competancy_destroy competancy.id %}" method="POST">
                             {# @@@ still can't replace this with a silk tag yet #}
                             <input type="image" src="{{ STATIC_URL }}pinax/images/silk/icons/delete.png" border="0" title="{% trans "Delete Post" %}" />
                             <input type="hidden" name="action" value="delete"/>
@@ -39,8 +41,9 @@
                 </tr>
             {% endfor %}
         </table>
+		{% endcomment %}
     {% else %}
-        {% trans "No competance yet... ;)" %}
+        <br>{% trans "No articles match your language settings" %}
     {% endif %}
     
 {% endblock %}

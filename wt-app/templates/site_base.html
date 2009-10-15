@@ -23,6 +23,7 @@
 {% block right_tabs %}
     {% if user.is_authenticated %}
         <ul class="tabs">{% spaceless %}
+            <li id="tab_articles"><a href="{% url article_list %}">{% trans "Articles" %}</a></li>
             <li id="tab_languages"><a href="{% url language_competancy_list %}">{% trans "Languages" %}</a></li>
             <li id="tab_profile"><a href="{% url profile_detail user %}">{% trans "Profile" %}</a></li>
             <li id="tab_notices"><a href="{% url notification_notices %}">{% trans "Notices" %}{% if notice_unseen_count %} ({{ notice_unseen_count }}){% endif %}</a></li>

@@ -138,6 +138,7 @@ INSTALLED_APPS = (
     'ajax_validation',
     'uni_form',
     'staticfiles',
+    'django_extensions',
     
     # internal (for now)
     'basic_profiles',

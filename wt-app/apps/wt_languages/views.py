@@ -19,10 +19,10 @@ else:
 
 @login_required
 def language_competancy_list(request, template_name="wt_languages/language_competancy_list.html"):
-    lc = LanguageCompetancy.objects.filter(user__username=request.user.username)
+    competencies = LanguageCompetancy.objects.filter(user__username=request.user.username)
 
     return render_to_response(template_name, {
-        "competancies": LanguageCompetancy.objects.filter(user__username=request.user.username),
+        "competancies": competencies,
     }, context_instance=RequestContext(request))
 
 @login_required
