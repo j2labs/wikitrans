@@ -6,17 +6,15 @@ from wt_languages.forms import *
 
 urlpatterns = patterns('',
     # your language competancies
-    url(r'^$', 'wt_languages.views.your_language_competancies', name="your_language_competancies"),
+    url(r'^$', 'wt_languages.views.language_competancy_list', name="language_competancy_list"),
 
     # new competancy
-    url(r'^new/$', 'wt_languages.views.new_language_competancy', name='new_language_competancy'),
+    url(r'^new/$', 'wt_languages.views.language_competancy_new', name='language_competancy_new'),
 
-    # edit blog post
-    #url(r'^edit/(\d+)/$', 'blog.views.edit', name='blog_edit'),
+    # edit competancy
+    url(r'^edit/(\d+)/$', 'wt_languages.views.language_competancy_edit', name='language_competancy_edit'),
 
-    #destory blog post
-    #url(r'^destroy/(\d+)/$', 'blog.views.destroy', name='blog_destroy'),
+    #destory competancy
+    url(r'^destroy/(\d+)/$', 'wt_languages.views.language_competancy_destroy', name='language_competancy_destroy'),
 
-    # ajax validation
-    #(r'^validate/$', 'ajax_validation.views.validate', {'form_class': BlogForm, 'callback': lambda request, *args, **kwargs: {'user': request.user}}, 'blog_form_validate'),
 )

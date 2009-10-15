@@ -1,0 +1,46 @@
+{% extends "wt_languages/base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+
+{% block head_title %}{% blocktrans %}Your Language Competancies{% endblocktrans %}{% endblock %}
+
+{% block body %}
+  
+    <h1>{% trans "Your Language Competancy's" %}</h1>
+    
+    {% if competancies %}
+        <table cellpadding="5" cellspacing="0" border="0" class="lc-list" width="100%">
+            <th>Language</th>
+			<th>Updated Date</th>
+            <th>Rating</th>
+			<th>Years Spoken</th>
+			<th>Translation</th>
+            <th></th>
+            {% for competancy in competancies %}
+                <tr class="{% cycle odd,even %}">
+                    <td><b><a href="{{ competancy.get_absolute_url }}">{{ competancy.language }}</a></b></td>
+                    <td nowrap>{{ competancy.updated|date:"d F Y" }}</td>
+					<td>{{ competancy.rating }}</td>
+					<td>{{ competancy.experience }}</td>
+					<td>{{ competancy.translation_options }}</td>
+                    <td width="50px" align="center">
+                        <a href="{% url language_competancy_edit competancy.id %}">
+                            {% silk "pencil" %}
+                        </a>
+                    </td>
+                    <td align="right">
+                        <form action="{% url language_competancy_destroy competancy.id %}" method="POST">
+                            {# @@@ still can't replace this with a silk tag yet #}
+                            <input type="image" src="{{ STATIC_URL }}pinax/images/silk/icons/delete.png" border="0" title="{% trans "Delete Post" %}" />
+                            <input type="hidden" name="action" value="delete"/>
+                       </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <br>{% trans "No competance yet... ;)" %}
+    {% endif %}
+    
+{% endblock %}

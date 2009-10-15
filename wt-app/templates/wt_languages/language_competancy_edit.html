@@ -1,0 +1,22 @@
+{% extends "wt_languages/base.html" %}
+
+{% load i18n %}
+{% load uni_form %}
+
+{% block head_title %}{% blocktrans %}Editing Competancy{% endblocktrans %}{% endblock %}
+
+{% block body %}
+    {% ifequal competancy.user request.user %}
+    <form class="uniForm" id="edit-profile" method="POST" action="">
+        <fieldset class="inlineLabels">
+            {{ language_competancy_form|as_uni_form }}
+            <div class="form_block">
+            <input type="hidden" name="action" value="update" />
+            <input type="submit" value="{% trans "Update" %}"/>
+            </div>
+        </fieldset>
+    </form>
+    {% else %}
+    <p>{% trans "You are not the author of this competancy" %}</p>
+    {% endifequal %}
+{% endblock %}
