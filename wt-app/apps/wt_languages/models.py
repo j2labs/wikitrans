@@ -71,15 +71,9 @@ class LanguageCompetancy(models.Model):
     class Meta:
         ordering = ('-updated',)
 
+    @models.permalink
     def get_absolute_url(self):
-        return ('language_competancy', None, {
-            'user': self.author.username,
-            'language': self.language
-    })
-    get_absolute_url = models.permalink(get_absolute_url)
-
-    # perhaps overriding will be necessary?
-    #def save(self, force_insert=False, force_update=False):
+        return ('language_competancy_edit', [str(self.id)])
 
 
 

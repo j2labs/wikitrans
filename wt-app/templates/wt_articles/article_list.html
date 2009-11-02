@@ -5,43 +5,39 @@
 
 {% block head_title %}{% blocktrans %}Article List{% endblocktrans %}{% endblock %}
 
-{% block body %}
+{% block subbody %}
   
-    <h1>{% trans "Article List" %}</h1>
+    <h1>{% block list-title %}{% trans "Article List" %}{% endblock %}</h1>
     
     {% if articles %}
-	    <p>ARTICLES</p>
-		{% comment %}
         <table cellpadding="5" cellspacing="0" border="0" class="lc-list" width="100%">
-            <th>Language</th>
-			<th>Updated Date</th>
-            <th>Rating</th>
-			<th>Years Spoken</th>
-			<th>Translation</th>
-            <th></th>
-            {% for competancy in competancies %}
+            <th>Title</th>
+			<th>Translated</th>
+			<th>Import Date</th>
+			<th>Language</th>
+			{% if translatable %}
+			<th>Method</th>
+			{% endif %}
+            {% for article in articles %}
                 <tr class="{% cycle odd,even %}">
-                    <td><b><a href="{{ competancy.get_absolute_url }}">{{ competancy.language }}</a></b></td>
-                    <td nowrap>{{ competancy.updated|date:"d F Y" }}</td>
-					<td>{{ competancy.rating }}</td>
-					<td>{{ competancy.experience }}</td>
-					<td>{{ competancy.translation_options }}</td>
-                    <td width="50px" align="center">
-                        <a href="{% url language_competancy_edit competancy.id %}">
-                            {% silk "pencil" %}
-                        </a>
-                    </td>
-                    <td align="right">
-                        <form action="{% url language_competancy_destroy competancy.id %}" method="POST">
-                            {# @@@ still can't replace this with a silk tag yet #}
-                            <input type="image" src="{{ STATIC_URL }}pinax/images/silk/icons/delete.png" border="0" title="{% trans "Delete Post" %}" />
-                            <input type="hidden" name="action" value="delete"/>
-                       </form>
-                    </td>
+                    <td><b><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></b></td>
+					{% if article.source_text %}
+					<td>Source</td>
+					{% else %}
+					<td>Translated</td>
+					{% endif %}
+					<td nowrap>{{ article.timestamp|date:"d F Y" }}</td>
+					<td>{{ article.language }}</td>
+					{% if translatable %}
+					{% if article.source_text %}
+					<td><a href="{{ article.link }}">{{ article.target }}</a></td>
+					{% else %}
+					<td><a href="{{ article.get_relative_url }}">Correct existing</a></td>
+					{% endif %}
+					{% endif %}
                 </tr>
             {% endfor %}
         </table>
-		{% endcomment %}
     {% else %}
         <br>{% trans "No articles match your language settings" %}
     {% endif %}

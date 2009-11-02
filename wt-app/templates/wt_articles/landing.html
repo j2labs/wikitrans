@@ -1,0 +1,23 @@
+{% extends "wt_articles/base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+
+{% block head_title %}{% blocktrans %}Article List{% endblocktrans %}{% endblock %}
+
+{% block subbody %}
+
+    <h1>{% trans "WikiTrans" %}</h1>
+    <div id="featured_translation">
+	  <h2>Featured Translation</h2>
+	  {{ featured_translation }}
+	</div>
+
+	<div id="recent_translations">
+	  <h2>Recent Translations</h2>
+	  {% for translation in recent_translations %}
+	  <li><a href="{{ translation.get_absolute_url }}">{{ translation.title }}</a></li>
+	  {% endfor %}
+	</div>
+    
+{% endblock %}

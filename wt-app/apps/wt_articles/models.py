@@ -4,10 +4,14 @@ from django.conf import settings
 from django.contrib.auth.models import User
 
 from wt_languages.models import LANGUAGE_CHOICES
+from wt_languages.models import TARGET,SOURCE,BOTH
+from wt_languages.models import LanguageCompetancy
+from wt_articles import TRANSLATORS
 
 import nltk.data
 from BeautifulSoup import BeautifulSoup
 from datetime import datetime
+from urllib import quote_plus, unquote_plus
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -28,14 +32,11 @@ class ArticleOfInterest(models.Model):
 
 class SourceArticle(models.Model):
     title = models.CharField(_('Title'), max_length=255)
-    source_language = models.CharField(_('Source Language'),
-                                       max_length=2,
-                                       choices=LANGUAGE_CHOICES)
-    target_language = models.CharField(_('Target Language'),
-                                       max_length=2,
-                                       choices=LANGUAGE_CHOICES)
+    language = models.CharField(_('Source Language'),
+                                max_length=2,
+                                choices=LANGUAGE_CHOICES)
     #version = models.IntegerField(_('Version')) # @@@ try django-versioning
-    import_date = models.DateTimeField(_('Import Date'))
+    timestamp = models.DateTimeField(_('Import Date'))
     doc_id = models.CharField(_('Document ID'), max_length=512)
     source_text = models.TextField(_('Source Text'))
     sentences_processed = models.BooleanField(_('Sentences Processed'))
@@ -58,7 +59,7 @@ class SourceArticle(models.Model):
         sentences = list()
         segment_id = 0
         soup = BeautifulSoup(self.source_text)
-        sent_detector = self.determine_splitter(self.source_language)
+        sent_detector = self.determine_splitter(self.language)
         # initial save for foriegn key based saves to work
         # save should occur after sent_detector is loaded
         super(SourceArticle, self).save()
@@ -69,35 +70,64 @@ class SourceArticle(models.Model):
                 s = SourceSentence(article=self, text=sentence, segment_id=segment_id)
                 segment_id += 1
                 s.save()
+            s.end_of_paragraph = True
+            s.save()
         self.sentences_processed = True
         super(SourceArticle, self).save()
+
+    def get_absolute_url(self):
+        return '/articles/source/%s/%s/%s' % (self.language,
+                                              quote_plus(self.title),
+                                              self.id)
+
+    def get_relative_url(self, lang_string=None):
+        if lang_string == None:
+            lang_string = self.language
+        return '%s/%s/%s' % (lang_string,
+                             quote_plus(self.title),
+                             self.id)
+    
 
 class SourceSentence(models.Model):
     article = models.ForeignKey(SourceArticle)
     text = models.CharField(_('Sentence Text'), max_length=1024)
     segment_id = models.IntegerField(_('Segment ID'))
+    end_of_paragraph = models.BooleanField(_('Paragraph closer'))
 
     class Meta:
         ordering = ('segment_id','article')
 
     def __unicode__(self):
-        return u"%s" % (self.text)
+        return "%s" % (self.id)
+
+class TranslationRequest(models.Model):
+    article = models.ForeignKey(SourceArticle)
+    target_language = models.CharField(_('Target Language'),
+                                       max_length=2,
+                                       choices=LANGUAGE_CHOICES)
+    date = models.DateTimeField(_('Request Date'))
+    translator = models.CharField(_('Translator type'),
+                                  max_length=512,
+                                  choices=TRANSLATORS)
+
+    def __unicode__(self):
+        return u"%s: %s" % (self.target_language, self.article)
 
 class TranslatedSentence(models.Model):
     segment_id = models.IntegerField(_('Segment ID'))
     source_sentence = models.ForeignKey(SourceSentence)
-    translation = models.CharField(_('Translated Text'), blank=True, max_length=1024)
+    text = models.CharField(_('Translated Text'), blank=True, max_length=1024)
     translated_by = models.CharField(_('Translated by'), blank=True, max_length=255)
     language = models.CharField(_('Language'), blank=True, max_length=2)
     translation_date = models.DateTimeField(_('Import Date'))
-    #version
     best = models.BooleanField(_('Best sentence'))
+    end_of_paragraph = models.BooleanField(_('Paragraph closer'))
 
     class Meta:
         ordering = ('segment_id',)
 
     def __unicode__(self):
-        return '%s :: %s' % (self.translation, self.best)
+        return '%s' % (self.id)
 
 class TranslatedArticle(models.Model):
     article = models.ForeignKey(SourceArticle)
@@ -122,7 +152,42 @@ class TranslatedArticle(models.Model):
             raise ValueException('Not all translated sentences derive from the source article')
         for ts in translated_sentences:
             self.sentences.add(ts)
-        
-    #version @@@ django-versioning
+
     def __unicode__(self):
         return '%s :: %s' % (self.title, self.article)
+
+    #@models.permalink
+    def get_absolute_url(self):
+        source_lang = self.article.language
+        target_lang = self.language
+        lang_pair = "%s-%s" % (source_lang, target_lang)
+        return '/articles/translated/%s/%s/%s' % (lang_pair,
+                                                  quote_plus(self.title),
+                                                  self.id)
+
+    def get_relative_url(self):
+        source_lang = self.article.language
+        target_lang = self.language
+        lang_pair = "%s-%s" % (source_lang, target_lang)
+        return '%s/%s/%s' % (lang_pair,
+                             quote_plus(self.title),
+                             self.id)
+    
+
+class FeaturedTranslation(models.Model):
+    featured_date = models.DateTimeField(_('Featured Date'))
+    article = models.ForeignKey(TranslatedArticle)
+
+    class Meta:
+        ordering = ('-featured_date',)
+
+    def __unicode__(self):
+        return '%s :: %s' % (self.featured_date, self.article.title)
+
+def latest_featured_article():
+    ft = FeaturedTranslation.objects.all()[0:]
+    if len(ft) > 0:
+        return ft[0]
+    else:
+        return None
+    

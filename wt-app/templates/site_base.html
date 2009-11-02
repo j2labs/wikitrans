@@ -6,6 +6,7 @@
 
 {% block extra_head_base %}
     <link rel="stylesheet" href="{{ STATIC_URL }}css/site_tabs.css" />
+    <link rel="stylesheet" href="{{ STATIC_URL }}css/wt_extensions.css" />
 
     {% block extra_head %}{% endblock %}
 {% endblock %}
@@ -23,7 +24,7 @@
 {% block right_tabs %}
     {% if user.is_authenticated %}
         <ul class="tabs">{% spaceless %}
-            <li id="tab_articles"><a href="{% url article_list %}">{% trans "Articles" %}</a></li>
+            <li id="tab_articles"><a href="{% url articles_landing %}">{% trans "Articles" %}</a></li>
             <li id="tab_languages"><a href="{% url language_competancy_list %}">{% trans "Languages" %}</a></li>
             <li id="tab_profile"><a href="{% url profile_detail user %}">{% trans "Profile" %}</a></li>
             <li id="tab_notices"><a href="{% url notification_notices %}">{% trans "Notices" %}{% if notice_unseen_count %} ({{ notice_unseen_count }}){% endif %}</a></li>
@@ -34,9 +35,9 @@
 {% block footer %}
 <div class="legal">
     {% trans "&copy; 2009 WikiTrans" %}
-    - <a href="{% url about %}">{% trans "About" %}</a>
+    - <a href="/">{% trans "About" %}</a>
+    - <a href="http://wikitrans.github.com/">{% trans "Blog" %}</a>
     - <a href="{% url terms %}">{% trans "Terms of Service" %}</a>
     - <a href="{% url privacy %}">{% trans "Privacy Policy" %}</a>
-    - <a href="{% url dmca %}">{% trans "DMCA Notice" %}</a>
 </div>
 {% endblock %}

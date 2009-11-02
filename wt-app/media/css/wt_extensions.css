@@ -1,0 +1,10 @@
+#search_articles
+{
+	float: right;
+}
+
+.uniForm .inlineLabels textarea{  width: 50%; /* <- Required property */ height: 7em; }
+.uniForm textarea,
+.uniForm .blockLabels textarea{ width: 53%; /* <- Required property */ height: 7em; }
+/* Get rid of the 'glow' effect in WebKit, optional */ 
+.uniForm .ctrlHolder textarea:focus{ outline: none; }

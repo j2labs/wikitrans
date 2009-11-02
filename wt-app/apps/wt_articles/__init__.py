@@ -1,18 +1,11 @@
-from goopytrans import translate as gtranslate
-import nltk.data
+HUMAN = 'Human'
+GOOGLE = 'Google'
+MECHANICAL_TURK = 'Mechanical Turk'
 
-class Translator:
-    """
-    A container class for various translation methods
-    """
-    def __init__(self, name, func):
-        self.name = name
-        self.translate = func
+TRANSLATORS = (
+    (HUMAN, HUMAN),
+    (GOOGLE, GOOGLE),
+    (MECHANICAL_TURK, MECHANICAL_TURK),
+)
 
-    def translate(self, text, source, target):
-        self.translate(text, source=source, target=target)
-
-def google_translator():
-    return Translator('Google Translator', gtranslate)
-
-
+DEFAULT_TRANNY = GOOGLE

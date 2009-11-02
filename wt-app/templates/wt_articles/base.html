@@ -7,10 +7,23 @@
 {% block subnav %}
     {% if user.is_authenticated %}
         <ul>
-            <li><a href="">{% trans "Article list" %}</a></li>
-            <li><a href="">{% trans "Find an article" %}</a></li>
+            <li><a href="{% url article_list %}">{% trans "Article list" %}</a></li>
+            <li><a href="{% url translatable_list %}">{% trans "Translate an article" %}</a></li>
         </ul>
     {% else %}
         &nbsp;
     {% endif %}
+{% endblock %}
+
+{% block body %}
+		{% block search %}
+		<div id="search_articles">
+		  <form action="{% url article_search %}" method="post">
+			<label for="search">Search</label>
+			<input type="text" name="search" id="search" />
+			<input type="submit" />
+		  </form>
+		</div>
+		{% endblock %}
+{% block subbody %}{% endblock %}
 {% endblock %}

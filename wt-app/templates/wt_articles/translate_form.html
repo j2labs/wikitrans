@@ -1,0 +1,26 @@
+{% extends "wt_articles/base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+
+{% block head_title %}{% blocktrans %}Translation{% endblocktrans %}{% endblock %}
+
+{% block subbody %}
+<h1>{% block list-title %}{% trans "Translate sentences" %}{% endblock %}</h1>
+<div id="translation_block">
+  <h2>{{ title }}</h2>
+  {% if no_match %}
+  <p>What?!</p>
+  {% else %}
+  <form class="uniForm" method="POST" action="">
+	{{ formset.management_form }}
+    <fieldset class="inlineLabels">
+	{% for form in formset.forms %}
+	  {% include "uni_form/uni_form.html" %}
+	{% endfor %}
+    </fieldset>
+    <input type="submit" />
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

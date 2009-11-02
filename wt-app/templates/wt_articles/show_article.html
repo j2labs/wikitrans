@@ -1,0 +1,16 @@
+{% extends "wt_articles/base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+
+{% block head_title %}{% blocktrans %}Article Display{% endblocktrans %}{% endblock %}
+
+{% block subbody %}
+  
+    <h1>{% trans "WikiTrans" %}</h1>
+    <div id="featured_translation">
+	  <h2>{{ title }}</h2>
+	  {{ article_text }}
+	</div>
+    
+{% endblock %}
