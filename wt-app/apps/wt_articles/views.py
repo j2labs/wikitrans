@@ -28,9 +28,9 @@ else:
 
 def landing(request, template_name="wt_articles/landing.html"):
     featured_translation = latest_featured_article()
-    featured_text = 'No translations are featured'
+    featured_text = u'No translations are featured'
     if featured_translation != None:
-        featured_text = featured_translation.article.sentences_as_html()
+        featured_text = sentences_as_html(featured_translation.article.sentences.all())
 
     recent_translations = TranslatedArticle.objects.all()[:5]
     
@@ -92,7 +92,8 @@ def article_search(request, template_name="wt_articles/article_list.html"):
 @login_required
 def article_list(request, template_name="wt_articles/article_list.html"):
     articles = user_compatible_articles(request.user)
-    
+    from django.utils.encoding import smart_unicode
+
     return render_to_response(template_name, {
         "articles": articles,
     }, context_instance=RequestContext(request))
@@ -108,7 +109,7 @@ def translatable_list(request, template_name="wt_articles/article_list.html"):
         for pair in lang_pairs:
             article = copy.deepcopy(sa)
             article.target = pair[0]
-            article.link = '/articles/translate/new/%s' % (article.get_relative_url(pair[1]))
+            article.link = u'/articles/translate/new/%s' % (article.get_relative_url(pair[1]))
             articles.append(article)
     
     return render_to_response(template_name, {

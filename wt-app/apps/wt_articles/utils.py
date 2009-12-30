@@ -6,6 +6,7 @@ from django.utils.safestring import SafeUnicode
 from wt_languages.models import TARGET, SOURCE, BOTH
 from wt_languages.models import LanguageCompetancy
 from wt_articles.models import SourceArticle, TranslatedArticle
+from wt_articles import GOOGLE,MECHANICAL_TURK,HUMAN,DEFAULT_TRANNY
 
 class Translator:
     """

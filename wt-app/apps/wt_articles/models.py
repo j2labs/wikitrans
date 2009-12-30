@@ -7,8 +7,8 @@ from wt_languages.models import LANGUAGE_CHOICES
 from wt_languages.models import TARGET,SOURCE,BOTH
 from wt_languages.models import LanguageCompetancy
 from wt_articles import TRANSLATORS
+from wt_articles.splitting import determine_splitter
 
-import nltk.data
 from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 from urllib import quote_plus, unquote_plus
@@ -44,29 +44,18 @@ class SourceArticle(models.Model):
     def __unicode__(self):
         return u"%s :: %s" % (self.title, self.doc_id)
 
-    def determine_splitter(self, language):
-        for desc_pair in LANGUAGE_CHOICES:
-            if desc_pair[0] == language:
-                tokenizer = 'tokenizers/punkt/%s.pickle' % (desc_pair[1].lower())
-                break
-        try:
-            tokenizer = nltk.data.load(tokenizer)
-            return tokenizer
-        except:
-            raise AttributeError('%s not supported by sentence splitters' % (language))
-            
     def save(self):
         sentences = list()
         segment_id = 0
         soup = BeautifulSoup(self.source_text)
-        sent_detector = self.determine_splitter(self.language)
+        sentence_splitter = determine_splitter(self.language)
         # initial save for foriegn key based saves to work
         # save should occur after sent_detector is loaded
         super(SourceArticle, self).save()
         for p in soup.findAll('p'):
             only_p = p.findAll(text=True)
             p_text = ''.join(only_p)
-            for sentence in sent_detector.tokenize(p_text.strip()):
+            for sentence in sentence_splitter(p_text.strip()):
                 s = SourceSentence(article=self, text=sentence, segment_id=segment_id)
                 segment_id += 1
                 s.save()
@@ -98,7 +87,7 @@ class SourceSentence(models.Model):
         ordering = ('segment_id','article')
 
     def __unicode__(self):
-        return "%s" % (self.id)
+        return u"%s" % (self.id)
 
 class TranslationRequest(models.Model):
     article = models.ForeignKey(SourceArticle)
@@ -127,7 +116,7 @@ class TranslatedSentence(models.Model):
         ordering = ('segment_id',)
 
     def __unicode__(self):
-        return '%s' % (self.id)
+        return u'%s' % (self.id)
 
 class TranslatedArticle(models.Model):
     article = models.ForeignKey(SourceArticle)
@@ -154,7 +143,7 @@ class TranslatedArticle(models.Model):
             self.sentences.add(ts)
 
     def __unicode__(self):
-        return '%s :: %s' % (self.title, self.article)
+        return u'%s :: %s' % (self.title, self.article)
 
     #@models.permalink
     def get_absolute_url(self):
@@ -182,7 +171,7 @@ class FeaturedTranslation(models.Model):
         ordering = ('-featured_date',)
 
     def __unicode__(self):
-        return '%s :: %s' % (self.featured_date, self.article.title)
+        return u'%s :: %s' % (self.featured_date, self.article.title)
 
 def latest_featured_article():
     ft = FeaturedTranslation.objects.all()[0:]

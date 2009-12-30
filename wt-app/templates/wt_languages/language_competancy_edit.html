@@ -3,7 +3,7 @@
 {% load i18n %}
 {% load uni_form %}
 
-{% block head_title %}{% blocktrans %}Editing Competancy{% endblocktrans %}{% endblock %}
+{% block head_title %}{% blocktrans %}Editing Competency{% endblocktrans %}{% endblock %}
 
 {% block body %}
     {% ifequal competancy.user request.user %}
@@ -17,6 +17,6 @@
         </fieldset>
     </form>
     {% else %}
-    <p>{% trans "You are not the author of this competancy" %}</p>
+    <p>{% trans "You are not the author of this competency" %}</p>
     {% endifequal %}
 {% endblock %}

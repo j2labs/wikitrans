@@ -1,7 +1,8 @@
 from django.core.management.base import NoArgsCommand, CommandError
 from datetime import datetime
 
-from wt_articles.utils import google_translator, GOOGLE
+from wt_articles import GOOGLE
+from wt_articles.utils import google_translator
 from wt_articles.models import TranslationRequest, TranslatedArticle
 from wt_articles.models import SourceSentence, TranslatedSentence
 

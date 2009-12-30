@@ -3,7 +3,7 @@ from datetime import datetime
 from wikipydia import query_text_rendered
 
 from wt_articles.models import ArticleOfInterest, SourceArticle, TranslationRequest
-from wt_articles.utils import DEFAULT_TRANNY
+from wt_articles import DEFAULT_TRANNY
 
 class Command(NoArgsCommand):
     help = "Updates the texts for wikipedia articles of interest"
