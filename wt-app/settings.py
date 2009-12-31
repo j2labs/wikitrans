@@ -76,7 +76,7 @@ STATICFILES_DIRS = (
 ADMIN_MEDIA_PREFIX = posixpath.join(STATIC_URL, "admin/")
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = 'p29od+rj_)p!j$^#j!94o8rrj+#w@4(e!#+i95w=^&vr_5h2@!'
+SECRET_KEY = ''
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
