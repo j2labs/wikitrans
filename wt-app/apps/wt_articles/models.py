@@ -79,7 +79,7 @@ class SourceArticle(models.Model):
 
 class SourceSentence(models.Model):
     article = models.ForeignKey(SourceArticle)
-    text = models.CharField(_('Sentence Text'), max_length=1024)
+    text = models.CharField(_('Sentence Text'), max_length=2048)
     segment_id = models.IntegerField(_('Segment ID'))
     end_of_paragraph = models.BooleanField(_('Paragraph closer'))
 
@@ -105,7 +105,7 @@ class TranslationRequest(models.Model):
 class TranslatedSentence(models.Model):
     segment_id = models.IntegerField(_('Segment ID'))
     source_sentence = models.ForeignKey(SourceSentence)
-    text = models.CharField(_('Translated Text'), blank=True, max_length=1024)
+    text = models.CharField(_('Translated Text'), blank=True, max_length=2048)
     translated_by = models.CharField(_('Translated by'), blank=True, max_length=255)
     language = models.CharField(_('Language'), blank=True, max_length=2)
     translation_date = models.DateTimeField(_('Import Date'))
