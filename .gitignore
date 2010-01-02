@@ -2,3 +2,4 @@
 dev.db
 *.pyc
 *.*~
+local_settings.py*
