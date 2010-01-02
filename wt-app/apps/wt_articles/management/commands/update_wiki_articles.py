@@ -31,7 +31,9 @@ class Command(NoArgsCommand):
                                          date=datetime.now(),
                                          translator=DEFAULT_TRANNY)
                 tr.save()
-            except:
+            except Exception as e:
+                print type(e)
+                print e.args
                 try:
                     source_article.delete()
                     tr.delete()
