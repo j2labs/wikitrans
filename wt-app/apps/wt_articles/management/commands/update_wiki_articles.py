@@ -16,7 +16,7 @@ class Command(NoArgsCommand):
             article_dict = query_text_rendered(article.title,
                                                language=article.title_language)
             # don't import articles we already have
-            if SourceArticle.objects.filter(doc_id__exact=article_dict['revid'],
+            if SourceArticle.objects.filter(doc_id__exact='%s' % article_dict['revid'],
                                             language=article.title_language):
                 continue
             try:
