@@ -177,9 +177,11 @@ def request_translation(request, form_class=TranslationRequestForm, template_nam
     if request.method == "POST":
         request_form = form_class(request.POST)
         if request_form.is_valid():
-            request = request_form.save(commit=False)
-            request.date = datetime.now()
-            return HttpResponseRedirect(ta.get_absolute_url())
+            translation_request = request_form.save(commit=False)
+            translation_request.date = datetime.now()
+            translation_request.save()
+            return render_to_response("wt_articles/requests_thankyou.html", {},
+                                      context_instance=RequestContext(request))
     else:
         request_form = form_class()
         
