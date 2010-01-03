@@ -13,6 +13,7 @@ from django.forms.formsets import formset_factory
 from wt_articles.models import SourceArticle,TranslatedArticle
 from wt_articles.models import SourceSentence,TranslatedSentence
 from wt_articles.models import FeaturedTranslation, latest_featured_article
+from wt_articles.models import ArticleOfInterest
 from wt_articles.forms import TranslatedSentenceMappingForm,TranslationRequestForm
 from wt_articles.utils import sentences_as_html, target_pairs_by_user
 from wt_articles.utils import user_compatible_articles
@@ -177,9 +178,16 @@ def request_translation(request, form_class=TranslationRequestForm, template_nam
     if request.method == "POST":
         request_form = form_class(request.POST)
         if request_form.is_valid():
-            translation_request = request_form.save(commit=False)
-            translation_request.date = datetime.now()
-            translation_request.save()
+            title = request_form.cleaned_data['title']
+            title_language = request_form.cleaned_data['title_language']
+            target_language = request_form.cleaned_data['target_language']
+            exists = ArticleOfInterest.objects.filter(title__exact=title,
+                                                      title_language__exact=title_language,
+                                                      target_language__exact=target_language)
+            if len(exists) < 1:
+                translation_request = request_form.save(commit=False)
+                translation_request.date = datetime.now()
+                translation_request.save()
             return render_to_response("wt_articles/requests_thankyou.html", {},
                                       context_instance=RequestContext(request))
     else:
