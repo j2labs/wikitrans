@@ -1,0 +1,21 @@
+{% extends "wt_articles/requests_base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+{% load uni_form %}
+
+{% block head_title %}{% blocktrans %}Request Translation{% endblocktrans %}{% endblock %}
+
+{% block subbody %}
+<h1>{% block list-title %}{% trans "Request Translation" %}{% endblock %}</h1>
+<div id="request_block">
+  <h2>{{ title }}</h2>
+  <form class="uniForm" method="POST" action="">
+	<fieldset class="inlineLabels">
+	  {{ request_form|as_uni_form }}
+	  {% include "uni_form/uni_form.html" %}
+      <input type="submit" />
+	</fieldset>
+  </form>
+</div>
+{% endblock %}

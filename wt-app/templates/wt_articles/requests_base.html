@@ -1,0 +1,28 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block body_class %}requests{% endblock %}
+
+{% block subnav %}
+    {% if user.is_authenticated %}
+        <ul>
+            <li><a href="{% comment %}{% url article_list %}{% endcomment %}">{% trans "Request Translation" %}</a></li>
+        </ul>
+    {% else %}
+        &nbsp;
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+		{% block search %}
+		<div id="search_articles">
+		  <form action="{% url article_search %}" method="post">
+			<label for="search">Search</label>
+			<input type="text" name="search" id="search" />
+			<input type="submit" />
+		  </form>
+		</div>
+		{% endblock %}
+{% block subbody %}{% endblock %}
+{% endblock %}

@@ -5,6 +5,7 @@ from wt_articles.forms import *
 
 
 urlpatterns = patterns('wt_articles.views',
+    ### Articles related stuff
     url(r'^$', 'landing', name="articles_landing"),
 
     url(r'^source/(?P<source>\w+)/(?P<title>[-_+()a-zA-Z0-9]+)/(?P<aid>\d+)',
@@ -23,4 +24,7 @@ urlpatterns = patterns('wt_articles.views',
 
     url(r'^translate/new/(?P<source>\w+)-(?P<target>\w+)/(?P<title>[-_+()a-zA-Z0-9]+)/(?P<aid>\d+)',
         'translate_from_scratch', name="translate_from_scratch"),
+
+    ### Translation request related stuff
+    url(r'^request_translation/', 'request_translation', name="request_translation"),
 )

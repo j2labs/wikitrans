@@ -13,7 +13,7 @@ from django.forms.formsets import formset_factory
 from wt_articles.models import SourceArticle,TranslatedArticle
 from wt_articles.models import SourceSentence,TranslatedSentence
 from wt_articles.models import FeaturedTranslation, latest_featured_article
-from wt_articles.forms import TranslatedSentenceMappingForm
+from wt_articles.forms import TranslatedSentenceMappingForm,TranslationRequestForm
 from wt_articles.utils import sentences_as_html, target_pairs_by_user
 from wt_articles.utils import user_compatible_articles
 from wt_articles.utils import user_compatible_target_articles
@@ -169,3 +169,20 @@ def translate_from_scratch(request, source, target, title, aid, template_name="w
         "title": article.title,
     }, context_instance=RequestContext(request))
 
+@login_required
+def request_translation(request, form_class=TranslationRequestForm, template_name="wt_articles/request_form.html"):
+    """
+    aid in this context is the source article id
+    """
+    if request.method == "POST":
+        request_form = form_class(request.POST)
+        if request_form.is_valid():
+            request = request_form.save(commit=False)
+            request.date = datetime.now()
+            return HttpResponseRedirect(ta.get_absolute_url())
+    else:
+        request_form = form_class()
+        
+    return render_to_response(template_name, {
+        "request_form": request_form,
+    }, context_instance=RequestContext(request))
