@@ -1,5 +1,6 @@
 /* SITE-SPECIFIC TAB STYLING */
 
+body.requests #tab_requests a,
 body.profile #tab_profile a,
 body.notices #tab_notices a,
 body.languages #tab_languages a,
@@ -7,6 +8,7 @@ body.articles #tab_articles a
 {
     color: #000; /* selected tab text colour */
 }
+body.requests #tab_requests,
 body.profile #tab_profile,
 body.notices #tab_notices,
 body.languages #tab_languages,
