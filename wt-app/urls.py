@@ -26,13 +26,15 @@ urlpatterns = patterns('',
     (r'^about/', include('about.urls')),
     (r'^account/', include('account.urls')),
     (r'^openid/(.*)', PinaxConsumer()),
-    (r'^profiles/', include('basic_profiles.urls')),
+    #(r'^profiles/', include('basic_profiles.urls')),
+    (r'^profiles/', include('profiles.urls')),
     (r'^articles/', include('wt_articles.urls')),
     (r'^languages/', include('wt_languages.urls')),
     (r'^notices/', include('notification.urls')),
     (r'^announcements/', include('announcements.urls')),
     
     (r'^admin/(.*)', admin.site.root),
+    (r'^avatar/', include('avatar.urls')),
 )
 
 if settings.SERVE_MEDIA:

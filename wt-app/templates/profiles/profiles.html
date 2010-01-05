@@ -1,15 +1,16 @@
-{% extends "basic_profiles/base.html" %}
+{% extends "profiles/base.html" %}
 
 {% load i18n %}
 {% load pagination_tags %}
+{% load avatar_tags %}
 {% load humanize %}
-{% load basic_profile_tags%}
+{% load profile_tags %}
 
 {% block head_title %}{% blocktrans %}All Profiles{% endblocktrans %}{% endblock %}
 
 {% block body %}
     <h1>{% trans "Profiles" %}</h1>
-
+    
     <form method="GET" action="">
         <input type="text" name="search" value="{{ search_terms }}" />
         <input type="submit" value="Search" />

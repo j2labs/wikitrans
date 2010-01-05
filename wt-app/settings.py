@@ -136,12 +136,14 @@ INSTALLED_APPS = (
     'pagination',
     'timezones',
     'ajax_validation',
+    'avatar',
     'uni_form',
     'staticfiles',
     'django_extensions',
     
     # internal (for now)
-    'basic_profiles',
+    #'basic_profiles',
+    'profiles',
     'account',
     'signup_codes',
     'about',
@@ -165,7 +167,8 @@ MARKUP_CHOICES = (
 )
 WIKI_MARKUP_CHOICES = MARKUP_CHOICES
 
-AUTH_PROFILE_MODULE = 'basic_profiles.Profile'
+#AUTH_PROFILE_MODULE = 'basic_profiles.Profile'
+AUTH_PROFILE_MODULE = 'profiles.Profile'
 NOTIFICATION_LANGUAGE_MODULE = 'account.Account'
 
 ACCOUNT_OPEN_SIGNUP = True
