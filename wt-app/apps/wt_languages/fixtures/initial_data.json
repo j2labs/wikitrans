@@ -1,0 +1,1 @@
+[{"pk": 1, "model": "wt_languages.languagecompetancy", "fields": {"rating": 1, "updated": "2010-01-04 19:18:18", "language": "es", "experience": 5, "user": 1, "translation_options": "b"}}]
