@@ -6,6 +6,8 @@ from django.utils.translation import ugettext_lazy as _
 
 from timezones.fields import TimeZoneField
 
+from wt_languages.models import ENGLISH, LANGUAGE_CHOICES
+
 class Profile(models.Model):
     
     user = models.ForeignKey(User, unique=True, verbose_name=_('user'))
@@ -13,7 +15,12 @@ class Profile(models.Model):
     about = models.TextField(_('about'), null=True, blank=True)
     location = models.CharField(_('location'), max_length=40, null=True, blank=True)
     website = models.URLField(_('website'), null=True, blank=True, verify_exists=False)
-    
+    native_language = models.CharField(_('Native Language'), max_length=2,
+                                       choices=LANGUAGE_CHOICES,
+                                       default=ENGLISH)
+    display_language = models.CharField(_('Display Language'), max_length=2,
+                                        choices=LANGUAGE_CHOICES,
+                                        default=ENGLISH)    
     def __unicode__(self):
         return self.user.username
     
