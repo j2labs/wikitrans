@@ -9,7 +9,6 @@ import nltk.data
 
 def determine_splitter(language):
     if language == 'ur':
-        print 'using an urdu splitter: %s' % urdu_split_sentences
         return urdu_split_sentences
 
     for desc_pair in LANGUAGE_CHOICES:
@@ -58,7 +57,6 @@ def urdu_split_sentences(text):
     new_string = ''
     segment_id = 1
     follow_up_punctuation = re.compile('[\n%s%s]' % (CR, BULLET))
-    print 'woof'
     i = 0
     new_sentences = []
     while i < len(sentences):
