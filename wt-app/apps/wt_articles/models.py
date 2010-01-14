@@ -13,6 +13,10 @@ from BeautifulSoup import BeautifulSoup
 from datetime import datetime
 from urllib import quote_plus, unquote_plus
 
+# Generic relation to mturk_manager
+from django.contrib.contenttypes import generic
+from mturk_manager.models import HITItem
+
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
 else:
@@ -40,6 +44,9 @@ class SourceArticle(models.Model):
     doc_id = models.CharField(_('Document ID'), max_length=512)
     source_text = models.TextField(_('Source Text'))
     sentences_processed = models.BooleanField(_('Sentences Processed'))
+
+    # hook into mturk manager
+    hits = generic.GenericRelation(HITItem)
 
     def __unicode__(self):
         return u"%s :: %s" % (self.title, self.doc_id)

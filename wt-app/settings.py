@@ -152,6 +152,7 @@ INSTALLED_APPS = (
     # wiki trans apps
 	'wt_languages',
     'wt_articles',
+    'mturk_manager',
 )
 
 ABSOLUTE_URL_OVERRIDES = {
