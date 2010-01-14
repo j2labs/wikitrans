@@ -3,11 +3,30 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
+class HITConfig(models.Model):
+    name = models.CharField(_('Question Form Name'), max_length=255)
+    max_assignments = models.PositiveIntegerField(_('Max number of Assignments'))
+    title = models.CharField(_('Question Form Title'), max_length='255')
+    description = models.TextField(_('Question Form Description'))
+    reward = models.DecimalField(_('Reward'), decimal_places=2, max_digits=2)
+    bonus = models.DecimalField(_('Bonus'), decimal_places=2, max_digits=2)
+    
+    class Meta:
+        ordering = ["name"]
+    
+    def __unicode__(self):
+        return self.name
+
+    
 ASSIGNABLE = 0
 REVIEWABLE = 1
+REVIEWING = 2
+DISPOSED = 3
 STATUSES = ( 
     (ASSIGNABLE, 'Assignable'),
     (REVIEWABLE, 'Reviewable'),
+    (REVIEWING, 'Reviewing'),
+    (DISPOSED, 'Disposed'),
 )
 class HITItem(models.Model):
     """
@@ -20,6 +39,7 @@ class HITItem(models.Model):
     status = models.IntegerField(_('HIT Status'),
                                  choices=STATUSES,
                                  default=ASSIGNABLE)
+    config = models.ForeignKey(HITConfig)
 
     # GFK
     content_type = models.ForeignKey(ContentType)
