@@ -22,6 +22,9 @@ class Translator:
 def google_translator():
     return Translator(GOOGLE, gtranslate)
 
+def mturk_translator():
+    mturk_translate = gtranslate
+    return Translator(MECHANICAL_TURK, mturk_translate)
 
 def _group_sentences(sentences):
     p_groups = []
