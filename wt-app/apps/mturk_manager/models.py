@@ -17,12 +17,14 @@ class TaskConfig(models.Model):
     def __unicode__(self):
         return self.name
 
+DISPOSED = -3
 CANCELLED = -2
 HAS_ERRORS = -1
 PENDING = 0
 IN_PROGRESS = 1
 FINISHED = 2
 TASKITEM_STATUSES = ( 
+    (DISPOSED, 'Disposed'),
     (CANCELLED, 'Cancelled'),
     (HAS_ERRORS, 'Has errors'),
     (PENDING, 'Pending'),
