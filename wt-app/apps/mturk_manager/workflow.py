@@ -104,28 +104,51 @@ def task_from_object(content_object):
     return task_item
 
 
+############################
+# Module related functions #
+############################
+
+def import_mturk_handler(task_item):
+    """
+    Uses the task item to determine the relevant application implementing
+    an mturk file. Attempts to load using __import__(module_name).
+    Passes along raised ImportError if one is thrown.
+    """
+    app_name = task_item.content_type.app_label
+    module_name = app_name + '.mturk'
+    __import__(module_name) # module = namedAny(module_name)
+    return module_name
+    
+def inspect_module(module_name, function_list):
+    import sys
+    """
+    Accepts a module and a list of functions and checks if module has
+    implemented each function in the list.
+    Throws TaskItemError if any are found missing.
+    """
+    module = sys.modules[module_name]
+    missingFuncs = filter(lambda f : not hasattr(module, f), function_list)
+    if missingFuncs:
+        error_string = 'Missing implementations in %s for :: %s'
+        raise TaskItemError(error_string % (module_name, ', '.join(missingFuncs)))
+    return module
+
+
 ##############################
 # Workflow utility functions #
 ##############################
 
 def handle_pending_task(task_item):
-    import sys
-
     """
     Accepts a content object and a TaskConfig name. It then generates the
     hit structure in boto and submits the hit to Amazon.
     """
     task_config = task_item.config
 
-    app_name = task_item.content_type.app_label
-    module_name = app_name + '.mturk'
-    #module = namedAny(module_name)
-    __import__(module_name)
-    module = sys.modules[module_name]
-    missingFuncs = filter(lambda f : not hasattr(module, f), CREATE_FUNCTIONS)
-    if missingFuncs:
-        error_string = 'Missing implementations in %s for :: %s'
-        raise TaskItemError(error_string % (module_name, ', '.join(missingFuncs)))
+    # Let exceptions just go here. They should alert the programmer that
+    # something diesn;t look right.
+    module_name = import_mturk_handler(task_item)
+    module = inspect_module(module_name, CREATE_FUNCTIONS)
 
     # Loop over each function in function list and call with
     # a the task_item as it's argument
