@@ -28,7 +28,7 @@ eg. split_task_to_hits(task_item, task_config)
 
 FUNCTION_ARGS represents the string used for the arguments.
 """
-CREATE_FUNCTIONS = (
+PENDING_FUNCTIONS = (
     'prepare_media',
     'generate_question_form',
     'submit_hit',
@@ -138,7 +138,7 @@ def inspect_module(module_name, function_list):
 # Workflow utility functions #
 ##############################
 
-def handle_pending_task(task_item):
+def handle_task(task_item, function_list):
     """
     Accepts a content object and a TaskConfig name. It then generates the
     hit structure in boto and submits the hit to Amazon.
@@ -148,10 +148,26 @@ def handle_pending_task(task_item):
     # Let exceptions just go here. They should alert the programmer that
     # something diesn;t look right.
     module_name = import_mturk_handler(task_item)
-    module = inspect_module(module_name, CREATE_FUNCTIONS)
+    module = inspect_module(module_name, function_list)
 
     # Loop over each function in function list and call with
     # a the task_item as it's argument
-    for function_name in CREATE_FUNCTIONS:
+    for function_name in function_list:
         function = getattr(module, function_name)
         function(task_item)
+
+
+def handle_pending_task(task_item):
+    """
+    Accepts a Task Item and calls each function in
+    PENDING_FUNCTIONS to submit the task as HITS to Amazon.
+    """
+    handle_task(task_item, PENDING_FUNCTIONS)
+
+def handle_review_task(task_item):
+    """
+    Accepts a Task Item and calls each function in
+    REVIEW_FUNCTIONS to submit the task as HITS to Amazon.
+    """
+    handle_task(task_item, REVIEW_FUNCTIONS)
+    
