@@ -3,7 +3,6 @@ from datetime import datetime
 
 from wt_articles import MECHANICAL_TURK
 from wt_articles.mturk import handle_translation_request
-from wt_articles.utils import mturk_translator
 from wt_articles.models import TranslationRequest, TranslatedArticle
 from wt_articles.models import SourceSentence, TranslatedSentence
 
@@ -15,7 +14,6 @@ class Command(NoArgsCommand):
     requires_model_validation = False
 
     def handle_noargs(self, **options):
-        t = mturk_translator()
         reqs = TranslationRequest.objects.filter(translator=MECHANICAL_TURK)
         for req in reqs:
             try:
