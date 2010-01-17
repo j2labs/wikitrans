@@ -3,7 +3,7 @@ import nltk.data
 
 from django.utils.safestring import SafeUnicode
 
-from wt_languages.models import TARGET, SOURCE, BOTH
+from wt_languages.models import TARGET_LANGUAGE, SOURCE_LANGUAGE, BOTH
 from wt_languages.models import LanguageCompetancy
 from wt_articles.models import SourceArticle, TranslatedArticle
 from wt_articles import GOOGLE,MECHANICAL_TURK,HUMAN,DEFAULT_TRANNY
@@ -59,7 +59,7 @@ def sentences_as_html(sentences):
 def user_compatible_source_articles(user):
     profile = user.get_profile()
     source_languages = set([lc.language for lc in
-                            user.languagecompetancy_set.exclude(translation_options=TARGET)])
+                            user.languagecompetancy_set.exclude(translation_options=TARGET_LANGUAGE)])
 
     source_languages.add(profile.native_language)
     source_languages.add(profile.display_language)
@@ -70,7 +70,7 @@ def user_compatible_source_articles(user):
 def user_compatible_target_articles(user):
     profile = user.get_profile()
     target_languages = set([lc.language for lc in
-                            user.languagecompetancy_set.exclude(translation_options=SOURCE)])
+                            user.languagecompetancy_set.exclude(translation_options=SOURCE_LANGUAGE)])
 
     target_languages.add(profile.native_language)
     target_languages.add(profile.display_language)
@@ -86,7 +86,7 @@ def user_compatible_articles(user):
 
 def target_pairs_by_user(user, source):
     target_languages = set([lc.language for lc in
-                            user.languagecompetancy_set.exclude(translation_options=SOURCE)])
+                            user.languagecompetancy_set.exclude(translation_options=SOURCE_LANGUAGE)])
     st_pair_builder = lambda t: (t, '%s-%s' % (source, t))
     pairs = map(st_pair_builder, target_languages)
     return pairs

@@ -9,7 +9,9 @@ from boto.mturk.question import Overview
 #from boto.mturk.qualification import Qualifications, PercentAssignmentsAbandonedRequirement
 #from boto.mturk.qualification import Requirement
 
-from mturk_manager.models import TaskConfig
+from django.contrib.contenttypes.models import ContentType
+
+from mturk_manager.models import TaskConfig,TaskItem
 
 """
 These functions are required to exist in application/mturk.py.
@@ -36,6 +38,10 @@ REVIEW_FUNCTIONS = (
 FUNCTION_ARGS = '(task_item, task_config)'
 
 
+##################################
+# Connectivity related functions #
+##################################
+
 def get_mturk_config():
     """
     returns a tuple containing the access key, secret key and host.
@@ -49,10 +55,42 @@ def get_mturk_config():
         raise
 
 def get_connection():
+    """
+    Returns a connection to mechanical turk using parameters found
+    in local_settings.
+    """
     access_key, secret_key, host = get_mturk_config()
     return MTurkConnection(aws_access_key_id=access_key,
                            aws_secret_access_key=secret_key,
                            host=host)
+
+#################################
+# Task Config related functions #
+#################################
+
+class TaskConfigError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+def load_task_config(config_name):
+    config_set = TaskConfig.objects.filter(name__exact=config_name)
+    if len(config_set) is not 1:
+        raise TaskConfigError('ERROR: could not find single hit config with name: %s' % config_name)
+    task_config = config_set[0]
+    return task_config
+
+
+###############################
+# Task Item related functions #
+###############################
+
+class TaskItemError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
 
 def task_from_object(content_object):
     """
@@ -61,8 +99,8 @@ def task_from_object(content_object):
     """
     ctype = ContentType.objects.get_for_model(content_object)
     task_item = TaskItem(content_object=content_object,
-                       object_id=content_object.id,
-                       content_type=ctype)
+                         object_id=content_object.id,
+                         content_type=ctype)
     return task_item
 
 def create_task(content_object, config_name):
@@ -70,23 +108,18 @@ def create_task(content_object, config_name):
     Accepts a content object and a TaskConfig name. It then generates the
     hit structure in boto and submits the hit to Amazon.
     """
-
-    # Load the task config
-    task_config_set = TaskConfig.objects.filter(name__exact=config_name)
-    if len(task_config_set) is not 1:
-        print 'ERROR: could not find single hit config with name: %s' % config_name
-        raise ValueError
-    task_config = task_config_set[0]
-
-    # create the task
+    # Load the task config and create task
+    task_config = load_task_config(config_name)
     task_item = task_from_object(content_object)
 
     app_name = task_item.content_type.app_label
     #module = namedAny(app_name + '.mturk')
-    module = __import__(app_name + '.mturk')
+    module_name = app_name + '.mturk'
+    module = __import__(module_name)
     missingFuncs = filter(lambda f : not hasattr(module, f), FUNCTIONS)
     if missingFuncs:
-        raise NotImplemented('IMPLEMENT THESE FOO: ' + ', '.join(missingFuncs))    
+        error_string = 'Missing implementations in %s for :: %s'
+        raise TaskItemError(error_string % (module_name, ', '.join(missingFuncs)))
 
     # 1. Loop over each function in FUNCTIONS
     # 2. Generate the string representing each function call iteration

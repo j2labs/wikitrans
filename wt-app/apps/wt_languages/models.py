@@ -41,12 +41,12 @@ LANGUAGE_CHOICES = (
     (CZECH, 'Czech'),
 )
 
-TARGET = 't'
-SOURCE = 's'
-BOTH = 'b'
+TARGET_LANGUAGE = 'target_language'
+SOURCE_LANGUAGE = 'source_language'
+BOTH = 'both'
 TRANSLATION_OPTIONS = (
-    (TARGET, 'Target'),
-    (SOURCE, 'Source'),
+    (TARGET_LANGUAGE, 'Target'),
+    (SOURCE_LANGUAGE, 'Source'),
     (BOTH, 'Both'),
 )
 
@@ -63,7 +63,7 @@ class LanguageCompetancy(models.Model):
     experience = models.IntegerField(_('How many years'))
     translation_options = models.CharField(_('Translation Options'),
                                            choices=TRANSLATION_OPTIONS,
-                                           max_length=1)
+                                           max_length=20)
 
     def __unicode__(self):
         return "%s :: %s" % (self.user, self.language)

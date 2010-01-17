@@ -1,12 +1,18 @@
+from datetime import datetime
+
 from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.utils.translation import ugettext_lazy as _
 
 class TaskConfig(models.Model):
+    """
+    TaskConfig is a general description of the info necessary for
+    creating a HIT from a task.
+    """
     name = models.CharField(_('Question Form Name'), max_length=255)
     max_assignments = models.PositiveIntegerField(_('Max number of Assignments'))
-    title = models.CharField(_('Question Form Title'), max_length='255')
+    title = models.CharField(_('Question Form Title'), max_length=255)
     description = models.TextField(_('Question Form Description'))
     reward = models.DecimalField(_('Reward Per Answer'), decimal_places=2, max_digits=2)
     bonus = models.DecimalField(_('Bonus'), decimal_places=2, max_digits=2)
@@ -39,8 +45,8 @@ class TaskItem(models.Model):
     # Task data 
     name = models.CharField(_('Task Name'), max_length=255)
     config = models.ForeignKey(TaskConfig)
-    active = models.BooleanField(_('Is Active'), default=True)
-    creation_date = models.DateTimeField(_('Creation Date'), null=True, blank=True)
+    creation_date = models.DateTimeField(_('Creation Date'),
+                                         default=datetime.now)
     status = models.IntegerField(_('Task Status'),
                                  choices=TASKITEM_STATUSES,
                                  default=PENDING)
@@ -54,7 +60,25 @@ class TaskItem(models.Model):
         ordering = ["name"]
     
     def __unicode__(self):
-        return self.name
+        return self.name    
+
+    
+class TaskAttribute(models.Model):
+    """
+    TaskAttribute is a field that contains an additional information that
+    must be known about the task.
+    """
+    task_item = models.ForeignKey(TaskItem, null=True, blank=True)
+    key = models.CharField(_('Attribute Key'), max_length=255, null=True, blank=True)
+    value = models.CharField(_('Attribute Value'), max_length=255, null=True, blank=True)
+
+    class Meta:
+        # apparently this doesn't work properly in sqlite...
+        unique_together = (('task_item', 'key'))
+        ordering = ["key"]
+
+    def __unicode__(self):
+        return u'%s:%s' % (self.task_item.id, self.key)
 
 PENDING = 0 
 ASSIGNABLE = 1
@@ -75,7 +99,8 @@ class HITItem(models.Model):
     """
     # HIT data
     hitid = models.CharField(_('HITId'), max_length=50, null=True, blank=True)
-    creation_date = models.DateTimeField(_('Creation Date'), null=True, blank=True)
+    creation_date = models.DateTimeField(_('Creation Date'),
+                                         default=datetime.now)
     status = models.IntegerField(_('HIT Status'),
                                  choices=HIT_STATUSES,
                                  default=PENDING)
@@ -109,15 +134,15 @@ class AssignmentItem(models.Model):
     assignment_id = models.CharField(_('Assignment ID'), max_length=50, null=True, blank=True)
     accept_time = models.DateTimeField(_('Accept Time'), null=True, blank=True)
     submit_time = models.DateTimeField(_('Submit Time'), null=True, blank=True)
-    status = models.IntegerField(_('HIT Status'),
+    status = models.IntegerField(_('Assignment Status'),
                                  choices=ASSIGNMENT_STATUSES,
                                  default=PENDING)
     hit = models.ForeignKey(HITItem)
     worker_id = models.CharField(_('Worker Id'), max_length=50, null=True, blank=True)
-    wage_handled = models.BooleanField(_('Wages handled'), default=False)
+    wages_paid = models.DecimalField(_('Wages Paid'), decimal_places=2, max_digits=2)
 
     class Meta:
-        ordering = ["creation_date"]
+        ordering = ["accept_time"]
     
     def __unicode__(self):
         if self.hitid == None:

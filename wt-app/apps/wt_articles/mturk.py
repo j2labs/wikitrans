@@ -16,17 +16,38 @@ from pyango_view import str2img
 from wt_articles.models import TranslationRequest
 from wt_articles.models import SourceArticle, SourceSentence
 from wt_articles import MECHANICAL_TURK
+from wt_languages.models import TARGET_LANGUAGE
+from wt_languages.models import SOURCE_LANGUAGE
 
-#from mturk_manager.models import TASKITEM_STATUSES, PENDING, TaskItem
-from mturk_manager.workflow import task_from_object
+from mturk_manager.workflow import task_from_object,load_task_config
+from mturk_manager.models import TaskConfig, TaskAttribute
 
-def handle_translation_request(trans_req):
+
+def handle_translation_request(trans_req, taskconfig_name='workflow test'):
+    """
+    handle_translation_request is an entry point from the management
+    command 'translate_mturk'. It takes a Translation Request and breaks
+    it into mturk hits representing the request parameters.
+    """
     article = trans_req.article
     language = trans_req.target_language
     print 'Translate %s to %s' % (article.title, language)
-    #task_item = task_from_object(trans_req.article,
-    #                             language)
-    
+
+    # the task config must exist already. not sure how to
+    # handle this yet
+    task_config = load_task_config(taskconfig_name)
+
+    task_item = task_from_object(trans_req.article)
+    task_item.name = 'Translate %s' % article.title
+    task_item.config = task_config
+    task_item.save()
+
+    # Attach knowledge of target language
+    task_attr = TaskAttribute(task_item=task_item,
+                              key=TARGET_LANGUAGE,
+                              value=language)
+    task_attr.save()
+
     
 def split_task_to_hits(task_item, task_config, task_set_size=9):
     """
