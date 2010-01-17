@@ -18,15 +18,15 @@ These functions are required to exist in application/mturk.py.
 They create the interaction between workflow and data.
 This serves to allow an interface language to be determined with
 minimal effort required. Each function receives a task_item and
-task_config.
+attaches itself to a task_config.
 
-Each function is currently blocking to ensure sequential handling.
-This allows each function to also return nothing and operate on
-data only. I'm interested in better ways of acheiving this goal.
+Functions can pass values to each other using retval. The return
+value of the previous call is used for input to the current call,
+hopefully allowing some interesting chaining of workflows.
 
-eg. split_task_to_hits(task_item, task_config)
+eg. retval = function_name(task_item, retval=retval)
 
-FUNCTION_ARGS represents the string used for the arguments.
+PENDING_FUNCTIONS is an example of a list of functions used.
 """
 PENDING_FUNCTIONS = (
     'prepare_media',
@@ -34,8 +34,11 @@ PENDING_FUNCTIONS = (
     'submit_hit',
 )
 REVIEW_FUNCTIONS = (
-    'fetch_reviewables',
+    'update_statuses',
 )
+
+DEFAULT_RETVAL = None
+TASKCONFIG_DEFAULT='workflow test'
 
 
 ##################################
@@ -75,6 +78,9 @@ class TaskConfigError(Exception):
         return repr(self.value)
 
 def load_task_config(config_name):
+    """
+    Loads a config and complains if more than, or less than, one is found.
+    """
     config_set = TaskConfig.objects.filter(name__exact=config_name)
     if len(config_set) is not 1:
         raise TaskConfigError('ERROR: could not find single hit config with name: %s' % config_name)
@@ -150,13 +156,15 @@ def handle_task(task_item, function_list):
     module_name = import_mturk_handler(task_item)
     module = inspect_module(module_name, function_list)
 
-    # Loop over each function in function list and call with
-    # a the task_item as it's argument
+    # Loop across each function in function list and call
+    # functions are called expecting a return value, which they pass into
+    # the next call for a piping effect.
+    retval = DEFAULT_RETVAL
     for function_name in function_list:
         function = getattr(module, function_name)
-        function(task_item)
+        retval = function(task_item, retval=retval)
 
-
+        
 def handle_pending_task(task_item):
     """
     Accepts a Task Item and calls each function in
