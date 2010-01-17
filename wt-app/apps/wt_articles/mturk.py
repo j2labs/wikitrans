@@ -22,8 +22,9 @@ from wt_languages.models import SOURCE_LANGUAGE
 from mturk_manager.workflow import task_from_object,load_task_config
 from mturk_manager.models import TaskConfig, TaskAttribute
 
+TASKCONFIG_DEFAULT='workflow test'
 
-def handle_translation_request(trans_req, taskconfig_name='workflow test'):
+def handle_translation_request(trans_req, taskconfig_name=TASKCONFIG_DEFAULT):
     """
     handle_translation_request is an entry point from the management
     command 'translate_mturk'. It takes a Translation Request and breaks
@@ -49,7 +50,7 @@ def handle_translation_request(trans_req, taskconfig_name='workflow test'):
     task_attr.save()
 
     
-def split_task_to_hits(task_item, task_config, task_set_size=9):
+def prepare_media(task_item):
     """
     split_task_to_hits is a function mturk_manager expects.
     tasks a task item and breaks it into hits managing
@@ -58,28 +59,25 @@ def split_task_to_hits(task_item, task_config, task_set_size=9):
     # Gather pertinent info
     source_article = task_item.content_object
     source_sentences = source_article.sourcesentence_set.all()
-
-    for s in source_sentences:
-        print s.text
-        
-    # handle relevant media
-    #img_sentence_info = _gen_images(source_sentences)
-
-    # break up task into hits with a pagesize of 10
-
-    # submit hits to Amazon
-
-    # mark HITItem tasks created successfully as Assignable
-
-    # return list of HITItems created to handle the tasks
+    print 'weeeee'
     
+    #img_sentence_info = _gen_images(source_sentences,
+    #'/Users/jd/Projects/playpen/botolearn/pydjango_view')
+                                    
+    # Where do I putz this?
 
-def _gen_images(sentences):
+def generate_question_form(task_item):
+    print 'generate_question_form'
+
+def submit_hit(task_item):
+    print 'submit that hit'
+
+def _gen_images(sentences, output_path):
     sentences = []
     width = 350
     extension = 'png'
     for s in urdu_sentences:
-        output = '%s/%s.%s' % ('/Users/jd/Projects/playpen/botolearn/pydjango_view', s.id, extension)
+        output = '%s/%s.%s' % (output_path, s.id, extension)
         dataurl = '%s/%s.%s' % ('/site_media/pydjango_view', s.id, extension)
         retval = str2img(s.text,
                          #font='Nafees',

@@ -29,13 +29,13 @@ eg. split_task_to_hits(task_item, task_config)
 FUNCTION_ARGS represents the string used for the arguments.
 """
 CREATE_FUNCTIONS = (
-    'split_task_to_hits',
+    'prepare_media',
+    'generate_question_form',
+    'submit_hit',
 )
 REVIEW_FUNCTIONS = (
     'fetch_reviewables',
 )
-
-FUNCTION_ARGS = '(task_item, task_config)'
 
 
 ##################################
@@ -108,27 +108,27 @@ def task_from_object(content_object):
 # Workflow utility functions #
 ##############################
 
-def create_task(content_object, config_name):
+def handle_pending_task(task_item):
+    import sys
+
     """
     Accepts a content object and a TaskConfig name. It then generates the
     hit structure in boto and submits the hit to Amazon.
     """
-    # Load the task config and create task
-    task_config = load_task_config(config_name)
-    task_item = task_from_object(content_object)
+    task_config = task_item.config
 
     app_name = task_item.content_type.app_label
     module_name = app_name + '.mturk'
     #module = namedAny(module_name)
-    module = __import__(module_name)
-    missingFuncs = filter(lambda f : not hasattr(module, f), FUNCTIONS)
+    __import__(module_name)
+    module = sys.modules[module_name]
+    missingFuncs = filter(lambda f : not hasattr(module, f), CREATE_FUNCTIONS)
     if missingFuncs:
         error_string = 'Missing implementations in %s for :: %s'
         raise TaskItemError(error_string % (module_name, ', '.join(missingFuncs)))
 
-    # 1. Loop over each function in FUNCTIONS
-    # 2. Generate the string representing each function call iteration
-    # 3. Use exec to call function
-    for function in CREATE_FUNCTIONS:
-        fun_string = '%s%s' % (function, FUNCTION_ARGS)
-        exec fun_string in globals(), locals()
+    # Loop over each function in function list and call with
+    # a the task_item as it's argument
+    for function_name in CREATE_FUNCTIONS:
+        function = getattr(module, function_name)
+        function(task_item)
