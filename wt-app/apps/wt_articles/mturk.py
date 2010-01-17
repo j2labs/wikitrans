@@ -61,14 +61,7 @@ def split_task_to_hits(task_item, task_config, task_set_size=9):
 
     for s in source_sentences:
         print s.text
-
-    # taskination
-    #hit_items = break_into_hits()
-    #for hit_item in hit_items:
-    #    hit_item = hit_from_object(content_object)
-    #    #hit_item.finish()
         
-
     # handle relevant media
     #img_sentence_info = _gen_images(source_sentences)
 

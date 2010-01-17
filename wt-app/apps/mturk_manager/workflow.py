@@ -103,6 +103,11 @@ def task_from_object(content_object):
                          content_type=ctype)
     return task_item
 
+
+##############################
+# Workflow utility functions #
+##############################
+
 def create_task(content_object, config_name):
     """
     Accepts a content object and a TaskConfig name. It then generates the
@@ -113,8 +118,8 @@ def create_task(content_object, config_name):
     task_item = task_from_object(content_object)
 
     app_name = task_item.content_type.app_label
-    #module = namedAny(app_name + '.mturk')
     module_name = app_name + '.mturk'
+    #module = namedAny(module_name)
     module = __import__(module_name)
     missingFuncs = filter(lambda f : not hasattr(module, f), FUNCTIONS)
     if missingFuncs:
