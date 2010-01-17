@@ -47,7 +47,9 @@ class Command(NoArgsCommand):
                 completed_reqs.append(req)
                 for cr in completed_reqs:
                     cr.delete()
-            except:
+            except Exception as e:
+                print type(e)
+                print e.args
                 ta.delete()
                 for ts in ta_sentences:
                     ts.delete()
