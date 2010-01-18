@@ -19,9 +19,20 @@ from wt_articles import MECHANICAL_TURK
 from wt_languages.models import TARGET_LANGUAGE
 from wt_languages.models import SOURCE_LANGUAGE
 
-from mturk_manager.workflow import task_from_object,load_task_config
-from mturk_manager.workflow import TASKCONFIG_DEFAULT
+from mturk_manager.workflow import task_from_object,load_task_config, get_connection
+from mturk_manager.workflow import TASKCONFIG_DEFAULT, DEFAULT_RETVAL
 from mturk_manager.models import TaskConfig, TaskAttribute
+
+
+############
+# Settings #
+############
+
+DEFAULT_TASK_PAGE_SIZE = 4
+DEFAULT_IMAGE_DIR = '/Users/jd/Desktop/pydjango_view'
+DEFAULT_WEB_PATH = '/site_media/pydjango_view'
+DEFAULT_PYDJANGO_WIDTH = 350
+DEFAULT_IMAGE_HOST = 'http://j2labs.net'
 
 
 ###########################################
@@ -54,68 +65,135 @@ def handle_translation_request(trans_req, taskconfig_name=TASKCONFIG_DEFAULT):
     task_attr.save()
 
 
-def _gen_images(sentences, output_path):
+def _gen_text_image(sentence, output_path):
     """
     dunno
     """
-    web_path = '/site_media/pydjango_view'
-    sentences = []
-    width = 350
+    web_path = DEFAULT_WEB_PATH
+    width = DEFAULT_PYDJANGO_WIDTH
     extension = 'png'
-    for s in urdu_sentences:
-        output = '%s/%s.%s' % (output_path, s.id, extension)
-        dataurl = '%s/%s.%s' % (web_path, s.id, extension)
-        retval = str2img(s.text,
-                         #font='Nafees',
-                         output=output,
-                         width=width)
-        data = {
-            'type': 'image',
-            'subtype': extension,
-            'file_path': output,
-            'dataurl': dataurl,
-            'width': width,
-            'text': s.text,
-        }
-        sentences.append(data)
-    return sentences
+    output = '%s/%s.%s' % (output_path, sentence.id, extension)
+    dataurl = '%s/%s.%s' % (web_path, sentence.id, extension)
+    retval = str2img(sentence.text,
+                     #font='Nafees',
+                     output=output,
+                     width=width)
+    data = {
+        'type': 'image',
+        'subtype': extension,
+        'file_path': output,
+        'dataurl': dataurl,
+        'width': width,
+        'sentence': sentence.text,
+    }
+    return data
+
+def _gen_overview():
+    overview_title = 'Translate these sentences'
+    overview_content = """<p>Your task is to translate the Urdu sentences into English.  Please make sure that your English translation:</p>
+<ul>
+    <li>Is faithful to the original in both meaning and style</li>
+    <li>Is grammatical, fluent, and natural-sounding English</li>
+    <li>Does not add or delete information from the original text</li>
+    <li>Does not contain any spelling errors</li>
+</ul>
+<p>When creating your translation, please follow these guidelines:</p>
+<ul>
+    <li><b>Do not use any machine translation systems (like translation.babylon.com)</b></li>
+    <li><b>You may</b> look up a word on <a href="http://www.urduword.com/">an online dictionary</a> if you do not know its translation</li>
+</ul>
+<p>Afterwards, we'll ask you a few quick questions about your language abilities.</p>
+"""
+
+    overview = Overview()
+    overview.append('Title', overview_title)
+    overview.append('FormattedContent', overview_content)
     
-    
+    return overview
+
+
 #############################
 # Required by mturk_manager #
 #############################
 
 ### PENDING_FUNCTIONS
-    
-def prepare_media(task_item, retval):
+
+def task_to_pages(task_item, retval=DEFAULT_RETVAL):
     """
-    dunno
+    task_to_pages is a bootstrapping function. it sets retval to a
+    new dictionary and populates it with a mapping of pages to
+    source data for HITItems
     """
-    # Gather pertinent info
     source_article = task_item.content_object
     source_sentences = source_article.sourcesentence_set.all()
-    print 'weeeee'
+    page_map = []
+    for i in xrange(0, len(source_sentences), DEFAULT_TASK_PAGE_SIZE):
+        page_sentences = source_sentences[i:(i+DEFAULT_TASK_PAGE_SIZE)]
+        page_map.append(page_sentences)
+    return page_map
     
-    img_sentence_info = _gen_images(source_sentences,
-                                    '/Users/jd/Projects/playpen/botolearn/pydjango_view')
+def prepare_media(task_item, retval=DEFAULT_RETVAL):
+    """
+    Expects a list of lists containing sentence segmented into pages
+    """
+    text_to_image = lambda sentence: _gen_text_image(sentence, DEFAULT_IMAGE_DIR)
+    results = [map(text_to_image, page) for page in retval]
+    return results
 
-    return img_sentence_info
-
-def generate_question_form(task_item):
+def generate_question_forms(task_item, retval=DEFAULT_RETVAL):
     """
     dunno
     """
-    print 'generate_question_form'
+    pages = retval
+    task_config = task_item.config
+    overview = _gen_overview()
 
-def submit_hit(task_item):
+    retval = []
+    for page in pages:
+    
+        qf = QuestionForm()
+        qf.append(overview)
+
+        for s in page:
+            qc = QuestionContent()
+            binary_content = {'type': s['type'],
+                              'subtype': s['subtype'],
+                              'dataurl': '%s%s' % (DEFAULT_IMAGE_HOST, s['dataurl']),
+                              'alttext': s['sentence']}
+            qc.append('Binary', binary_content)
+            fta = FreeTextAnswer()
+            ansp = AnswerSpecification(fta)
+            q = Question(identifier=str(uuid.uuid4()),
+                         content=qc,
+                         answer_spec=ansp)
+            qf.append(q)
+        retval.append(qf)
+    return retval
+
+def submit_hits(task_item, retval=DEFAULT_RETVAL):
     """
     dunno
     """
-    print 'submit that hit'
+    task_config = task_item.config
+    mtc = get_connection()
+    print 'MTC : %s' % mtc
+    question_forms = retval
+    for qf in question_forms:
+        try:
+            mtc.create_hit(question=qf,
+                           max_assignments=task_config.max_assignments,
+                           title=task_config.title,
+                           description=task_config.description,
+                           reward=task_config.reward)
+        except Exception as e:
+            print type(e)
+            print e.args
+            raise
+ 
 
 ### REVIEW_FUNCTIONS
 
-def update_statuses(task_item):
+def update_statuses(task_item, retval=DEFAULT_RETVAL):
     """
     dunno
     """

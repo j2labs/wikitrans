@@ -29,9 +29,10 @@ eg. retval = function_name(task_item, retval=retval)
 PENDING_FUNCTIONS is an example of a list of functions used.
 """
 PENDING_FUNCTIONS = (
+    'task_to_pages',
     'prepare_media',
-    'generate_question_form',
-    'submit_hit',
+    'generate_question_forms',
+    'submit_hits',
 )
 REVIEW_FUNCTIONS = (
     'update_statuses',
