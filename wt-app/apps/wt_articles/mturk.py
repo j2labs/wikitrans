@@ -10,6 +10,7 @@ from boto.mturk.question import Overview
 #from boto.mturk.qualification import Requirement
 
 from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
 
 from pyango_view import str2img
 
@@ -19,9 +20,11 @@ from wt_articles import MECHANICAL_TURK
 from wt_languages.models import TARGET_LANGUAGE
 from wt_languages.models import SOURCE_LANGUAGE
 
-from mturk_manager.workflow import task_from_object,load_task_config, get_connection
+from mturk_manager.workflow import task_from_object, load_task_config, get_connection
 from mturk_manager.workflow import TASKCONFIG_DEFAULT, DEFAULT_RETVAL
-from mturk_manager.models import TaskConfig, TaskAttribute
+from mturk_manager.models import TaskConfig, TaskAttribute, HITItem
+from mturk_manager.models import PENDING, ASSIGNABLE, IN_PROGRESS
+from mturk_manager.models import HIT_ATTR_TASK_PAGE
 
 
 ############
@@ -120,9 +123,9 @@ def _gen_overview():
 
 def task_to_pages(task_item, retval=DEFAULT_RETVAL):
     """
-    task_to_pages is a bootstrapping function. it sets retval to a
-    new dictionary and populates it with a mapping of pages to
-    source data for HITItems
+    This is a bootstrapping function, meaning it puts a totally new
+    retval in motion. It returns a list of lists represending pages
+    of lists of sentences
     """
     source_article = task_item.content_object
     source_sentences = source_article.sourcesentence_set.all()
@@ -134,7 +137,10 @@ def task_to_pages(task_item, retval=DEFAULT_RETVAL):
     
 def prepare_media(task_item, retval=DEFAULT_RETVAL):
     """
-    Expects a list of lists containing sentence segmented into pages
+    Works on the output of task_to_pages to create relevant media.
+    Returns a list of lists of dictionary's. Each dictionary represents
+    the source sentence AND now all the new information gathered from
+    calling _gen_text_image(...)
     """
     text_to_image = lambda sentence: _gen_text_image(sentence, DEFAULT_IMAGE_DIR)
     results = [map(text_to_image, page) for page in retval]
@@ -142,7 +148,8 @@ def prepare_media(task_item, retval=DEFAULT_RETVAL):
 
 def generate_question_forms(task_item, retval=DEFAULT_RETVAL):
     """
-    dunno
+    Works on the output of prepare_media by generating a QuestionForm
+    for each page in retval. Returns a list of QuestionForm instances.
     """
     pages = retval
     task_config = task_item.config
@@ -170,27 +177,38 @@ def generate_question_forms(task_item, retval=DEFAULT_RETVAL):
         retval.append(qf)
     return retval
 
+@transaction.commit_on_success
 def submit_hits(task_item, retval=DEFAULT_RETVAL):
     """
-    dunno
+    Works on the output of generate_question_forms by submitting each
+    QuestionForm found and returns the output of each submission in a
+    list.
     """
     task_config = task_item.config
     mtc = get_connection()
-    print 'MTC : %s' % mtc
     question_forms = retval
-    for qf in question_forms:
-        try:
-            mtc.create_hit(question=qf,
-                           max_assignments=task_config.max_assignments,
-                           title=task_config.title,
-                           description=task_config.description,
-                           reward=task_config.reward)
-        except Exception as e:
-            print type(e)
-            print e.args
-            raise
- 
+    try:
+        make_hit = lambda qf: mtc.create_hit(question=qf,
+                                             max_assignments=task_config.max_assignments,
+                                             title=task_config.title,
+                                             description=task_config.description,
+                                             reward=task_config.reward)
+        hit_sets = map(make_hit, question_forms)
+        for page_num, hit_set in enumerate(hit_sets):
+            h = HITItem(hitid=hit_set[0].HITId,
+                        status=ASSIGNABLE,
+                        task=task_item,
+                        task_page=page_num)
+            task_item.status = IN_PROGRESS
+            h.save()
+            task_item.save()
+        return hit_set
+    except Exception as e:
+        print type(e)
+        print e.args
+        raise
 
+                    
 ### REVIEW_FUNCTIONS
 
 def update_statuses(task_item, retval=DEFAULT_RETVAL):

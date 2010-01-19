@@ -74,13 +74,13 @@ class TaskAttribute(models.Model):
 
     class Meta:
         # apparently this doesn't work properly in sqlite...
-        unique_together = (('task_item', 'key'))
+        unique_together = (('task_item', 'key', 'value'))
         ordering = ["key"]
 
     def __unicode__(self):
         return u'%s:%s' % (self.task_item.id, self.key)
 
-PENDING = 0 
+#PENDING = 0 
 ASSIGNABLE = 1
 REVIEWABLE = 2
 REVIEWING = 3
@@ -92,6 +92,7 @@ HIT_STATUSES = (
     (REVIEWING, 'Reviewing'),
     (DISPOSED, 'Disposed'),
 )
+HIT_ATTR_TASK_PAGE = 'Task Page'
 class HITItem(models.Model):
     """
     A model that represents the HIT and is mapped to an object that understands
@@ -106,11 +107,10 @@ class HITItem(models.Model):
                                  default=PENDING)
     task = models.ForeignKey(TaskItem)
     task_page = models.IntegerField(_('Task Page Num'))
-    #worker_id = models.CharField(_('Worker Id'), max_length=50, null=True, blank=True)
 
     class Meta:
         ordering = ["creation_date"]
-    
+
     def __unicode__(self):
         if self.hitid == None:
             return u'-1'
@@ -118,7 +118,7 @@ class HITItem(models.Model):
             return self.hitid
 
 REJECTED=-1
-PENDING=0
+#PENDING=0
 ACCEPTED=1
 ASSIGNMENT_STATUSES = (
     (REJECTED, 'Rejected'),

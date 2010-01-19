@@ -39,7 +39,7 @@ REVIEW_FUNCTIONS = (
 )
 
 DEFAULT_RETVAL = None
-TASKCONFIG_DEFAULT='workflow test'
+TASKCONFIG_DEFAULT='default'
 
 
 ##################################
