@@ -216,8 +216,4 @@ def update_statuses(task_item, retval=DEFAULT_RETVAL):
     dunno
     """
     print 'update_statuses'
-    mtc = get_connection()
-    reviewable = mtc.get_reviewable_hits()
-    print reviewable
-
     
