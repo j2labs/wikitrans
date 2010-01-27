@@ -1,4 +1,5 @@
 from goopytrans import translate as gtranslate
+from apyrtium import translate as atranslate
 import nltk.data
 
 from django.utils.safestring import SafeUnicode
@@ -6,7 +7,8 @@ from django.utils.safestring import SafeUnicode
 from wt_languages.models import TARGET_LANGUAGE, SOURCE_LANGUAGE, BOTH
 from wt_languages.models import LanguageCompetancy
 from wt_articles.models import SourceArticle, TranslatedArticle
-from wt_articles import GOOGLE,MECHANICAL_TURK,HUMAN,DEFAULT_TRANNY
+from wt_articles import GOOGLE,APERTIUM
+from wt_articles import MECHANICAL_TURK,HUMAN,DEFAULT_TRANNY
 
 class Translator:
     """
@@ -21,6 +23,9 @@ class Translator:
 
 def google_translator():
     return Translator(GOOGLE, gtranslate)
+
+def apertium_translator():
+    return Translator(APERTIUM, atranslate)
 
 def _group_sentences(sentences):
     p_groups = []
