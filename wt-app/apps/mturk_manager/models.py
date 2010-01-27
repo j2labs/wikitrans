@@ -62,7 +62,8 @@ class TaskItem(models.Model):
     def __unicode__(self):
         return self.name    
 
-    
+
+# TODO Use requesterannotation instead
 class TaskAttribute(models.Model):
     """
     TaskAttribute is a field that contains an additional information that
@@ -107,6 +108,8 @@ class HITItem(models.Model):
                                  default=PENDING)
     task = models.ForeignKey(TaskItem)
     task_page = models.IntegerField(_('Task Page Num'))
+    annotation = models.CharField(_('Requester Annotation'),
+                                  max_length=255)
 
     class Meta:
         ordering = ["creation_date"]
@@ -139,14 +142,15 @@ class AssignmentItem(models.Model):
                                  default=PENDING)
     hit = models.ForeignKey(HITItem)
     worker_id = models.CharField(_('Worker Id'), max_length=50, null=True, blank=True)
-    wages_paid = models.DecimalField(_('Wages Paid'), decimal_places=2, max_digits=2)
+    wages_paid = models.DecimalField(_('Wages Paid'), decimal_places=2, max_digits=2, default='0.0')
 
     class Meta:
         ordering = ["accept_time"]
     
     def __unicode__(self):
-        if self.hitid == None:
+        if self.assignment_id == None:
             return u'-1'
         else:
-            return self.hitid
+            return self.assignment_id
+
 

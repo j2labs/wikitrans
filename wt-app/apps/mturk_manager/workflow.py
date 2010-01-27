@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import uuid
+import dateutil.parser
 
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import Question, QuestionForm, QuestionContent, ExternalQuestion
@@ -11,7 +12,9 @@ from boto.mturk.question import Overview
 
 from django.contrib.contenttypes.models import ContentType
 
-from mturk_manager.models import TaskConfig,TaskItem
+from mturk_manager.models import TaskConfig, TaskItem, HITItem, AssignmentItem
+from mturk_manager.models import REVIEWABLE, PENDING
+
 
 """
 These functions are required to exist in application/mturk.py.
@@ -34,8 +37,8 @@ PENDING_FUNCTIONS = (
     'generate_question_forms',
     'submit_hits',
 )
-REVIEW_FUNCTIONS = (
-    'update_statuses',
+REVIEWABLE_FUNCTIONS = (
+    'get_answer_data',
 )
 
 DEFAULT_RETVAL = None
@@ -111,6 +114,81 @@ def task_from_object(content_object):
     return task_item
 
 
+#########################
+# HIT Related functions #
+#########################
+
+class HITItemError(Exception):
+    def __init__(self, value):
+        self.value = value
+    def __str__(self):
+        return repr(self.value)
+
+def mark_hit_reviewable(hitid):
+    """
+    Changes status of hit 'Reviewable'
+    """
+    print 'mark_hit_reviewable %s' % hitid
+    hit_set = HITItem.objects.filter(hitid__exact=hitid)
+    if len(hit_set) == 1:
+        hit = hit_set[0]
+        hit.status = REVIEWABLE
+        hit.save()
+
+def check_for_reviewables():
+    """
+    dunno
+    """
+    mtc = get_connection()
+    reviewables = mtc.get_reviewable_hits()
+    print 'check_for_reviewables %s' % [r.HITId for r in reviewables]
+    for h in reviewables:
+        mark_hit_reviewable(h.HITId)
+    return reviewables
+
+
+################################
+# Assignment related functions #
+################################
+
+def get_assignment_data(shallow_hitids):
+    """
+    dunno
+    """
+    hit_map = []
+    mtc = get_connection()
+    for h in shallow_hitids:
+        hitid = h.HITId
+        hit_set = HITItem.objects.filter(hitid__exact=hitid)
+        print hit_set
+        if len(hit_set) == 1:
+            hit = hit_set[0]
+#        else:
+#            return HITItemError('No hit matches id %s' % hitid)
+        
+            print 'Getting assignment data for hit %s' % h.HITId
+            assignments = mtc.get_assignments(h.HITId)
+            new_asses = []
+            if len(assignments) > 0:
+                for a in assignments:
+                    # Skip assignments we've already collected
+                    ass_set = AssignmentItem.objects.filter(assignment_id__exact=a.AssignmentId)
+                    if len(ass_set) < 1:
+                        new_assignment = AssignmentItem()
+                        new_assignment.assignment_id = a.AssignmentId
+                        new_assignment.accept_time = dateutil.parser.parse(a.AcceptTime)
+                        new_assignment.submit_time = dateutil.parser.parse(a.SubmitTime)
+                        new_assignment.status = PENDING
+                        new_assignment.hit = hit
+                        new_assignment.worker_id = a.WorkerId
+                        new_assignment.save()
+                        new_asses.append(new_assignment)
+                    else:
+                        new_asses.append(ass_set[0])
+                hit_map.append((hit, new_asses))
+    return hit_map
+        
+
 ############################
 # Module related functions #
 ############################
@@ -145,7 +223,7 @@ def inspect_module(module_name, function_list):
 # Workflow utility functions #
 ##############################
 
-def handle_task(task_item, function_list):
+def handle_task(task_item, function_list, first_retval=DEFAULT_RETVAL):
     """
     Accepts a content object and a TaskConfig name. It then generates the
     hit structure in boto and submits the hit to Amazon.
@@ -160,7 +238,7 @@ def handle_task(task_item, function_list):
     # Loop across each function in function list and call
     # functions are called expecting a return value, which they pass into
     # the next call for a piping effect.
-    retval = DEFAULT_RETVAL
+    retval = first_retval
     for function_name in function_list:
         function = getattr(module, function_name)
         retval = function(task_item, retval=retval)
@@ -173,10 +251,16 @@ def handle_pending_task(task_item):
     """
     handle_task(task_item, PENDING_FUNCTIONS)
 
-def handle_review_task(task_item):
+def handle_reviewable_task(task_item):
     """
     Accepts a Task Item and calls each function in
-    REVIEW_FUNCTIONS to submit the task as HITS to Amazon.
+    REVIEWABLE_FUNCTIONS to submit the task as HITS to Amazon.
     """
-    handle_task(task_item, REVIEW_FUNCTIONS)
+    #handle_task(task_item, REVIEWABLE_FUNCTIONS)
+    reviewables = check_for_reviewables()
+    hit_map = get_assignment_data(reviewables)
+    handle_task(task_item,
+                REVIEWABLE_FUNCTIONS,
+                first_retval=hit_map)
+
     

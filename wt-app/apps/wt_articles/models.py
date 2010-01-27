@@ -15,7 +15,7 @@ from urllib import quote_plus, unquote_plus
 
 # Generic relation to mturk_manager
 from django.contrib.contenttypes import generic
-from mturk_manager.models import HITItem
+from mturk_manager.models import HITItem, AssignmentItem
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -187,3 +187,12 @@ def latest_featured_article():
     else:
         return None
     
+class MTurkTranslatedSentence(TranslatedSentence):
+    assignment = models.ForeignKey(AssignmentItem)
+
+    class Meta:
+        ordering = ('-segment_id',)
+
+    def __unicode__(self):
+        return u'%s' % (self.id)
+

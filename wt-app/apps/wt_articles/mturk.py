@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import uuid
+from datetime import datetime
 
 from boto.mturk.connection import MTurkConnection
 from boto.mturk.question import Question, QuestionForm, QuestionContent, ExternalQuestion
@@ -14,7 +15,7 @@ from django.db import transaction
 
 from pyango_view import str2img
 
-from wt_articles.models import TranslationRequest
+from wt_articles.models import TranslationRequest, MTurkTranslatedSentence
 from wt_articles.models import SourceArticle, SourceSentence
 from wt_articles import MECHANICAL_TURK
 from wt_languages.models import TARGET_LANGUAGE
@@ -93,7 +94,7 @@ def _gen_text_image(sentence, output_path):
 
 def _gen_overview():
     overview_title = 'Translate these sentences'
-    overview_content = """<p>Your task is to translate the Urdu sentences into English.  Please make sure that your English translation:</p>
+    overview_content = """<p>Your task is to translate the Spanish sentences into English.  Please make sure that your English translation:</p>
 <ul>
     <li>Is faithful to the original in both meaning and style</li>
     <li>Is grammatical, fluent, and natural-sounding English</li>
@@ -102,10 +103,8 @@ def _gen_overview():
 </ul>
 <p>When creating your translation, please follow these guidelines:</p>
 <ul>
-    <li><b>Do not use any machine translation systems (like translation.babylon.com)</b></li>
-    <li><b>You may</b> look up a word on <a href="http://www.urduword.com/">an online dictionary</a> if you do not know its translation</li>
+    <li><b>Do not use any machine translation systems (like transle.google.com)</b></li>
 </ul>
-<p>Afterwards, we'll ask you a few quick questions about your language abilities.</p>
 """
 
     overview = Overview()
@@ -166,7 +165,8 @@ def generate_question_forms(task_item, retval=DEFAULT_RETVAL):
             binary_content = {'type': s['type'],
                               'subtype': s['subtype'],
                               'dataurl': '%s%s' % (DEFAULT_IMAGE_HOST, s['dataurl']),
-                              'alttext': s['sentence']}
+                              #'alttext': s['sentence']}
+                              'alttext': 'no cheating!'}
             qc.append('Binary', binary_content)
             fta = FreeTextAnswer()
             ansp = AnswerSpecification(fta)
@@ -211,9 +211,42 @@ def submit_hits(task_item, retval=DEFAULT_RETVAL):
                     
 ### REVIEW_FUNCTIONS
 
-def update_statuses(task_item, retval=DEFAULT_RETVAL):
-    """
-    dunno
-    """
-    print 'update_statuses'
+
+def get_answer_data(task_item, retval=DEFAULT_RETVAL):
+    hit_map = retval
+    source_sentences = task_item.content_object.sourcesentence_set.all()
+    # if this crashes, it's because of a programmer error, not user error
+    target_lang = task_item.taskattribute_set.filter(key=TARGET_LANGUAGE)[0].value
+    mtc = get_connection()
     
+    for hit_tuple in hit_map:
+        hititem, assignmentitems = hit_tuple
+        assignments = mtc.get_assignments(hititem.hitid)
+        task_page = hititem.task_page
+        # amazon and wikitrans *should* be in sync
+        for ass,item in zip(assignments, assignmentitems):
+            for i,ans in enumerate(ass.answers[0]):
+                segment_id = task_page * DEFAULT_TASK_PAGE_SIZE + i
+                ss = source_sentences[segment_id]
+                mts = MTurkTranslatedSentence(segment_id=segment_id,
+                                              source_sentence=ss,
+                                              text=ans.fields[0][1],
+                                              translated_by=ass.WorkerId,
+                                              translation_date=datetime.now(),
+                                              language=target_lang,
+                                              best=False, ### TODO figure something better out
+                                              end_of_paragraph=ss.end_of_paragraph,
+                                              assignment=item)
+                mts.save()
+
+#           try:
+#                # choose one
+#                mtc.approve_assignment(a.AssignmentId)
+#                #mtc.reject_assignment(a.AssignmentId)
+#            except:
+#                # Might raise EC2ReponseError
+#                raise
+
+                
+
+
