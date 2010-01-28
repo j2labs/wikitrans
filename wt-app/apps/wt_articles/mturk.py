@@ -113,6 +113,14 @@ def _gen_overview():
     
     return overview
 
+def assignment_has_answer(assignmentitem, segment_id):
+    assignments = MTurkTranslatedSentence.objects.filter(
+        assignment=assignmentitem
+    ).filter(
+        segment_id=segment_id
+    )
+    return len(assignments) == 1
+
 
 #############################
 # Required by mturk_manager #
@@ -185,7 +193,7 @@ def submit_hits(task_item, retval=DEFAULT_RETVAL):
     list.
     """
     task_config = task_item.config
-    mtc = get_connection()
+    (host, mtc) = get_connection()
     question_forms = retval
     try:
         make_hit = lambda qf: mtc.create_hit(question=qf,
@@ -215,9 +223,10 @@ def submit_hits(task_item, retval=DEFAULT_RETVAL):
 def get_answer_data(task_item, retval=DEFAULT_RETVAL):
     hit_map = retval
     source_sentences = task_item.content_object.sourcesentence_set.all()
-    # if this crashes, it's because of a programmer error, not user error
+    # if this crashes, it's because the TARGET_LANGUAGE wasn't set when the hit
+    # was created
     target_lang = task_item.taskattribute_set.filter(key=TARGET_LANGUAGE)[0].value
-    mtc = get_connection()
+    (host, mtc) = get_connection()
     
     for hit_tuple in hit_map:
         hititem, assignmentitems = hit_tuple
@@ -228,16 +237,17 @@ def get_answer_data(task_item, retval=DEFAULT_RETVAL):
             for i,ans in enumerate(ass.answers[0]):
                 segment_id = task_page * DEFAULT_TASK_PAGE_SIZE + i
                 ss = source_sentences[segment_id]
-                mts = MTurkTranslatedSentence(segment_id=segment_id,
-                                              source_sentence=ss,
-                                              text=ans.fields[0][1],
-                                              translated_by=ass.WorkerId,
-                                              translation_date=datetime.now(),
-                                              language=target_lang,
-                                              best=False, ### TODO figure something better out
-                                              end_of_paragraph=ss.end_of_paragraph,
-                                              assignment=item)
-                mts.save()
+                if not assignment_has_answer(item, segment_id):
+                    mts = MTurkTranslatedSentence(segment_id=segment_id,
+                                                  source_sentence=ss,
+                                                  text=ans.fields[0][1],
+                                                  translated_by=ass.WorkerId,
+                                                  translation_date=datetime.now(),
+                                                  language=target_lang,
+                                                  best=False, ### TODO figure something better out
+                                                  end_of_paragraph=ss.end_of_paragraph,
+                                                  assignment=item)
+                    mts.save()
 
 #           try:
 #                # choose one
