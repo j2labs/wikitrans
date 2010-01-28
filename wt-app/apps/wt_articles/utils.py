@@ -65,8 +65,8 @@ def _user_compatible_articles(user, article_model, language_direction):
     languages.add(profile.native_language)
     languages.add(profile.display_language)
     
-    source_articles = set(article_model.objects.filter(language__in=languages))
-    return source_articles
+    articles = set(article_model.objects.filter(language__in=languages))
+    return articles
 
 def user_compatible_source_articles(user):
     return _user_compatible_articles(user, SourceArticle, TARGET_LANGUAGE)
