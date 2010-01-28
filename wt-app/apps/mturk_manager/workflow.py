@@ -67,9 +67,10 @@ def get_connection():
     in local_settings.
     """
     access_key, secret_key, host = get_mturk_config()
-    return MTurkConnection(aws_access_key_id=access_key,
+    mtc =  MTurkConnection(aws_access_key_id=access_key,
                            aws_secret_access_key=secret_key,
                            host=host)
+    return (host, mtc)
 
 #################################
 # Task Config related functions #
@@ -128,7 +129,6 @@ def mark_hit_reviewable(hitid):
     """
     Changes status of hit 'Reviewable'
     """
-    print 'mark_hit_reviewable %s' % hitid
     hit_set = HITItem.objects.filter(hitid__exact=hitid)
     if len(hit_set) == 1:
         hit = hit_set[0]
@@ -139,9 +139,8 @@ def check_for_reviewables():
     """
     dunno
     """
-    mtc = get_connection()
+    (host, mtc) = get_connection()
     reviewables = mtc.get_reviewable_hits()
-    print 'check_for_reviewables %s' % [r.HITId for r in reviewables]
     for h in reviewables:
         mark_hit_reviewable(h.HITId)
     return reviewables
@@ -156,16 +155,13 @@ def get_assignment_data(shallow_hitids):
     dunno
     """
     hit_map = []
-    mtc = get_connection()
+    (host, mtc) = get_connection()
+    print 'HITS :: %s' % [h.HITId for h in shallow_hitids]
     for h in shallow_hitids:
         hitid = h.HITId
         hit_set = HITItem.objects.filter(hitid__exact=hitid)
-        print hit_set
         if len(hit_set) == 1:
             hit = hit_set[0]
-#        else:
-#            return HITItemError('No hit matches id %s' % hitid)
-        
             print 'Getting assignment data for hit %s' % h.HITId
             assignments = mtc.get_assignments(h.HITId)
             new_asses = []
@@ -187,7 +183,7 @@ def get_assignment_data(shallow_hitids):
                         new_asses.append(ass_set[0])
                 hit_map.append((hit, new_asses))
     return hit_map
-        
+
 
 ############################
 # Module related functions #
