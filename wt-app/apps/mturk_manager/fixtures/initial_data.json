@@ -1,1 +1,1 @@
-[{"pk": 1, "model": "mturk_manager.taskconfig", "fields": {"description": "description", "title": "workflow demonstration", "bonus": "0", "max_assignments": 1, "reward": "0.1", "name": "default"}}]
+[{"pk": 1, "model": "mturk_manager.taskconfig", "fields": {"description": "Please translate some sentences from various wikipedia articles", "title": "Translate wikipedia articles", "bonus": "0", "max_assignments": 1, "reward": "0.1", "name": "default"}}]
