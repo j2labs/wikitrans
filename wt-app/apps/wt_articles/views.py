@@ -33,7 +33,7 @@ def landing(request, template_name="wt_articles/landing.html"):
     if featured_translation != None:
         featured_text = sentences_as_html(featured_translation.article.sentences.all())
 
-    recent_translations = TranslatedArticle.objects.all()[:5]
+    recent_translations = TranslatedArticle.objects.order_by('-timestamp')[:5]
     
     return render_to_response(template_name, {
         "featured_translation": featured_text,
