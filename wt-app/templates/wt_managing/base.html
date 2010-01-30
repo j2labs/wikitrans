@@ -1,0 +1,54 @@
+{% extends "site_base.html" %}
+
+{% load i18n %}
+
+{% block extra_head %}
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    // You may specify partial version numbers, such as "1" or "1.3",
+    //  with the same result. Doing so will automatically load the 
+    //  latest version matching that partial revision pattern 
+    //  (e.g. 1.3 would load 1.3.2 today and 1 would load 1.4.1).
+    google.load("jquery", "1.4.0");
+ 
+    google.setOnLoadCallback(function() {
+      // Place init code here instead of $(document).ready()
+        $("#select_all").click(function() {
+            $("input[class=checkboxinput]").each(function() {
+                this.checked = true;
+    		});
+    	});
+        $("#select_none").click(function() {
+            $("input[class=checkboxinput]").each(function() {
+                this.checked = false;
+    		});
+    	});
+
+    });
+</script>
+{% endblock %}
+
+{% block body_class %}managing{% endblock %}
+
+{% block subnav %}
+    {% if user.is_authenticated %}
+        <ul>
+            <li><a href="">{% trans "Meow" %}</a></li>
+        </ul>
+    {% else %}
+        &nbsp;
+    {% endif %}
+{% endblock %}
+
+{% block body %}
+		{% block search %}
+		<div id="search_articles">
+		  <form action="{% url article_search %}" method="post">
+			<label for="search">Search</label>
+			<input type="text" name="search" id="search" />
+			<input type="submit" />
+		  </form>
+		</div>
+		{% endblock %}
+{% block subbody %}{% endblock %}
+{% endblock %}

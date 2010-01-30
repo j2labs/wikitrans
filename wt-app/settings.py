@@ -150,9 +150,11 @@ INSTALLED_APPS = (
     'django.contrib.admin',
 
     # wiki trans apps
+    # order matters!
 	'wt_languages',
     'wt_articles',
     'mturk_manager',
+    'wt_managing',
 )
 
 ABSOLUTE_URL_OVERRIDES = {

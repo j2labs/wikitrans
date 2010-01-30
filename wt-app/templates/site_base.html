@@ -27,6 +27,7 @@
             <li id="tab_articles"><a href="{% url articles_landing %}">{% trans "Articles" %}</a></li>
             <li id="tab_requests"><a href="{% url request_translation %}">{% trans "Requests" %}</a></li>
             <li id="tab_languages"><a href="{% url language_competancy_list %}">{% trans "Languages" %}</a></li>
+            <li id="tab_managing"><a href="{% url reviewable_article_list %}">{% trans "Managing" %}</a></li>
             <li id="tab_notices"><a href="{% url notification_notices %}">{% trans "Notices" %}{% if notice_unseen_count %} ({{ notice_unseen_count }}){% endif %}</a></li>
             <li id="tab_profile"><a href="{% url profile_detail user %}">{% trans "Profile" %}</a></li>
         {% endspaceless %}</ul>

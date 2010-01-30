@@ -21,9 +21,12 @@ urlpatterns = patterns('wt_articles.views',
     url(r'^list/', 'article_list', name="article_list"),
     url(r'^search/', 'article_search', name="article_search"),
     url(r'^translatable/', 'translatable_list', name="translatable_list"),
+    url(r'^posteditable/', 'posteditable_list', name="posteditable_list"),
 
     url(r'^translate/new/(?P<source>\w+)-(?P<target>\w+)/(?P<title>[-_+()a-zA-Z0-9]+)/(?P<aid>\d+)',
         'translate_from_scratch', name="translate_from_scratch"),
+    url(r'^translate/postedit/(?P<source>\w+)-(?P<target>\w+)/(?P<title>[-_+()a-zA-Z0-9]+)/(?P<aid>\d+)',
+        'translate_post_edit', name="translate_post_edit"),
 
     ### Translation request related stuff
     url(r'^request_translation/', 'request_translation', name="request_translation"),

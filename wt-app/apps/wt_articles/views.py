@@ -119,9 +119,29 @@ def translatable_list(request, template_name="wt_articles/article_list.html"):
     }, context_instance=RequestContext(request))
 
 @login_required
+def posteditable_list(request, template_name="wt_articles/article_list.html"):
+    import copy
+    user = request.user
+    target_articles = user_compatible_target_articles(request.user)
+    articles = []
+    for ta in target_articles:
+        lang_pairs = target_pairs_by_user(user, ta.language)
+        for pair in lang_pairs:
+            article = copy.deepcopy(ta)
+            article.target = pair[0]
+            article.link = u'/articles/translate/postedit/%s' % (article.get_relative_url())
+            articles.append(article)
+    
+    return render_to_response(template_name, {
+        "articles": articles,
+        "translatable": True,
+    }, context_instance=RequestContext(request))
+
+@login_required
 def translate_from_scratch(request, source, target, title, aid, template_name="wt_articles/translate_form.html"):
     """
-    aid in this context is the source article id
+    Loads a source article by provided article id (aid) and generates formsets
+    to contain each sentence in the requested translation.
     """
     sa_set = SourceArticle.objects.filter(id=aid)
     if len(sa_set) < 1:
@@ -132,6 +152,7 @@ def translate_from_scratch(request, source, target, title, aid, template_name="w
     article = sa_set[0]
     ss_list = article.sourcesentence_set.all()
     TranslatedSentenceSet = formset_factory(TranslatedSentenceMappingForm, extra=0)
+    
     if request.method == "POST":
         formset = TranslatedSentenceSet(request.POST, request.FILES)
         if formset.is_valid():
@@ -169,6 +190,64 @@ def translate_from_scratch(request, source, target, title, aid, template_name="w
         "formset": formset,
         "title": article.title,
     }, context_instance=RequestContext(request))
+
+@login_required
+def translate_post_edit(request, source, target, title, aid, template_name="wt_articles/translate_form.html"):
+    """
+    Loads a translated article by it's article id (aid) and generates formsets
+    with the source article and translated sentence. It then generates a new
+    translated article out of the input from the user
+    """
+    ta_set = TranslatedArticle.objects.filter(id=aid)
+    if len(ta_set) < 1:
+        no_match = True
+        return render_to_response(template_name,
+                                  {"no_match": True},
+                                  context_instance=RequestContext(request))
+    translated_article = ta_set[0]
+    ts_list = translated_article.sentences.all()
+    ss_list = translated_article.article.sourcesentence_set.all()
+    TranslatedSentenceSet = formset_factory(TranslatedSentenceMappingForm, extra=0)
+    
+    if request.method == "POST":
+        formset = TranslatedSentenceSet(request.POST, request.FILES)
+#        if formset.is_valid():
+#            ts_list = []
+#            ta = TranslatedArticle()
+#            for form in formset.forms:
+#                ss = form.cleaned_data['source_sentence']
+#                text = form.cleaned_data['text']
+#                ts = TranslatedSentence(segment_id=ss.segment_id,
+#                                        source_sentence=ss,
+#                                        text=text,
+#                                        translated_by=request.user.username,
+#                                        translation_date=datetime.now(),
+#                                        language=target,
+#                                        best=True, ### TODO figure something better out
+#                                        end_of_paragraph=ss.end_of_paragraph)
+#                ts_list.append(ts)
+#            ta.article = ss.article
+#            ta.title = ss.article.title
+#            ta.timestamp = datetime.now()
+#            ta.language = target
+#            ta.save()
+#            for ts in ts_list:
+#                ts.save()
+#            ta.sentences = ts_list
+#            ta.save()
+#            return HttpResponseRedirect(ta.get_absolute_url())
+    else:
+        initial_ts_set = [{'text': s.text} for s in ts_list]
+        formset = TranslatedSentenceSet(initial=initial_ts_set)
+    for form,s in zip(formset.forms,ss_list):
+        form.fields['text'].label = s.text
+        form.fields['text'].__dict__
+    
+    return render_to_response(template_name, {
+        "formset": formset,
+        "title": translated_article.title,
+    }, context_instance=RequestContext(request))
+    
 
 @login_required
 def request_translation(request, form_class=TranslationRequestForm, template_name="wt_articles/request_form.html"):

@@ -1,0 +1,28 @@
+{% extends "wt_managing/base.html" %}
+
+{% load i18n %}
+{% load theme_tags %}
+
+{% block head_title %}{% blocktrans %}Translation{% endblocktrans %}{% endblock %}
+
+{% block subbody %}
+<h1>{% block list-title %}{% trans "Review Translation" %}{% endblock %}</h1>
+<div id="translation_block">
+  <h2>{{ title }}</h2>
+  {% if no_match %}
+  <p>What?!</p>
+  {% else %}
+  <form class="uniForm" method="POST" action="" name="review_sentences">
+	{{ formset.management_form }}
+    <fieldset class="inlineLabels">
+	{% for form in formset.forms %}
+	  {% include "uni_form/uni_form.html" %}
+	{% endfor %}
+    </fieldset>
+	<input type="button", value="All of these are good" id="select_all">
+	<input type="button", value="These are awful" id="select_none">
+    <input type="submit" />
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

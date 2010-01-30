@@ -30,6 +30,7 @@ urlpatterns = patterns('',
     (r'^profiles/', include('profiles.urls')),
     (r'^articles/', include('wt_articles.urls')),
     (r'^languages/', include('wt_languages.urls')),
+    (r'^managing/', include('wt_managing.urls')),
     (r'^notices/', include('notification.urls')),
     (r'^announcements/', include('announcements.urls')),
     

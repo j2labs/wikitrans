@@ -1,30 +1,32 @@
-{% extends "wt_articles/articles_base.html" %}
+{% extends "wt_managing/base.html" %}
 
 {% load i18n %}
 {% load theme_tags %}
 
-{% block head_title %}{% blocktrans %}Article List{% endblocktrans %}{% endblock %}
+{% block head_title %}{% blocktrans %}Translated Article List{% endblocktrans %}{% endblock %}
 
 {% block subbody %}
   
-    <h1>{% block list-title %}{% trans "Article List" %}{% endblock %}</h1>
+    <h1>{% block list-title %}{% trans "Manage Translations" %}{% endblock %}</h1>
     
     {% if articles %}
-        <table cellpadding="5" cellspacing="0" border="0" class="lc-list" width="100%">
+        <table cellpadding="5" cellspacing="0" border="0" class="managing-list" width="100%">
             <th>Title</th>
 			<th>Translated</th>
 			<th>Import Date</th>
 			<th>Language</th>
-			{% if translatable %}
 			<th>Method</th>
-			{% endif %}
             {% for article in articles %}
                 <tr class="{% cycle odd,even %}">
                     <td><b><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></b></td>
+					{% if article.source_text %}
+					<td>Source</td>
+					{% else %}
 					<td>Translated</td>
+					{% endif %}
 					<td nowrap>{{ article.timestamp|date:"d F Y" }}</td>
 					<td>{{ article.language }}</td>
-					<td><a href="{{ article.link }}">{{ article.target }}</a></td>
+					<td><a href="{{ article.get_relative_url }}">Start reviewing</a></td>
                 </tr>
             {% endfor %}
         </table>
