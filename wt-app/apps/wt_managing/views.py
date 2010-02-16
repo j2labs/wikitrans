@@ -60,7 +60,7 @@ def review_translation(request, source, target, title, aid,
                                        review_date=datetime.now(),
                                        status=FINISHED)
                 tr.save()
-                return HttpResponseRedirect(reverse(reviewable_article_list))
+        return HttpResponseRedirect(reverse(reviewable_article_list))
     else:
         initial_ts_set = [{'translated_sentences': s} for s in ts_list]
         formset = TranslatedSentenceSet(initial=initial_ts_set)
