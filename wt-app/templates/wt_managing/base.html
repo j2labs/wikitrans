@@ -33,7 +33,8 @@
 {% block subnav %}
     {% if user.is_authenticated %}
         <ul>
-            <li><a href="">{% trans "Meow" %}</a></li>
+            <li><a href="{% url reviewable_article_list %}">{% trans "Articles" %}</a></li>
+            <li><a href="{% url reviewable_sentence_list %}">{% trans "Sentences" %}</a></li>
         </ul>
     {% else %}
         &nbsp;

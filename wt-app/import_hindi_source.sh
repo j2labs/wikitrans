@@ -1,0 +1,1 @@
+./manage.py import_turk_source --articles-file ../../data\ sets\ to\ import/hi/2010-02-13T1051/hi_articles --ids-file ../../data\ sets\ to\ import/hi/2010-02-13T1051/hi_articles.ids --source-file ../../data\ sets\ to\ import/hi/2010-02-13T1051/hindi_wikipedia_feature_articles_to_translate-2010-02-13T1051.csv

@@ -20,19 +20,19 @@ class SourceSentenceAdmin(admin.ModelAdmin):
     search_fields = ('article','text',)
 
 class TranslatedArticleAdmin(admin.ModelAdmin):
-    list_display = ('article', 'language', 'timestamp',)
-    search_fields = ('article', 'title', 'language', 'timestamp',)
+    list_display = ('article', 'language', 'timestamp', 'approved',)
+    search_fields = ('article', 'title', 'language', 'timestamp', 'approved',)
 
 class TranslatedSentenceAdmin(admin.ModelAdmin):
-    list_display = ('segment_id','translation_date','text', 'best',)
-    search_fields = ('segment_id','translation_date','text', 'best',)
+    list_display = ('segment_id','translation_date','text', 'approved',)
+    search_fields = ('segment_id','translation_date','text', 'approved',)
 
 class FeaturedTranslationAdmin(admin.ModelAdmin):
     list_display = ('article','featured_date',)
     
 class MTurkTranslatedSentenceAdmin(TranslatedArticleAdmin):
-    list_display = ('segment_id','translation_date','text', 'best',)
-    search_fields = ('segment_id','translation_date','text', 'best',)
+    list_display = ('segment_id','translation_date','text', 'approved',)
+    search_fields = ('segment_id','translation_date','text', 'approved',)
     
 admin.site.register(ArticleOfInterest, ArticleOfInterestAdmin)
 admin.site.register(TranslationRequest, TranslationRequestAdmin)

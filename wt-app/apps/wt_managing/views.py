@@ -13,8 +13,8 @@ from django.forms.formsets import formset_factory
 
 
 from wt_managing.utils import user_compatible_translations
-from wt_managing.forms import TranslationReviewForm
-from wt_managing.models import FINISHED, TranslationReview
+from wt_managing.forms import SentenceReviewForm
+from wt_managing.models import FINISHED, ArticleReview, SentenceReview
 from wt_articles.models import TranslatedSentence, TranslatedArticle
 
 
@@ -25,6 +25,14 @@ else:
 
 @login_required
 def reviewable_article_list(request, template_name="wt_managing/reviewable_article_list.html"):
+    articles = user_compatible_translations(request.user)
+
+    return render_to_response(template_name, {
+        "articles": articles,
+    }, context_instance=RequestContext(request))
+
+@login_required
+def reviewable_sentence_list(request, template_name="wt_managing/reviewable_sentence_list.html"):
     
     articles = user_compatible_translations(request.user)
 
@@ -33,9 +41,9 @@ def reviewable_article_list(request, template_name="wt_managing/reviewable_artic
     }, context_instance=RequestContext(request))
 
 @login_required
-def review_translation(request, source, target, title, aid,
-                       form_class=TranslationReviewForm,
-                       template_name="wt_managing/translate_form.html"):
+def review_translatedarticle(request, source, target, title, aid,
+                             form_class=SentenceReviewForm,
+                             template_name="wt_managing/translate_form.html"):
     """
     aid in this context is the translated article id
     """
@@ -45,6 +53,7 @@ def review_translation(request, source, target, title, aid,
         return render_to_response(template_name,
                                   {"no_match": True},
                                   context_instance=RequestContext(request))
+
     article = ta_set[0]
     ts_list = article.sentences.all()
     TranslatedSentenceSet = formset_factory(form_class, extra=0)
@@ -52,17 +61,30 @@ def review_translation(request, source, target, title, aid,
     if request.method == "POST":
         formset = TranslatedSentenceSet(request.POST, request.FILES)
         if formset.is_valid():
+            articlereview_id = formset.forms[0].cleaned_data['articlereview']
+            articlereview, created = ArticleReview.objects.get_or_create(id=articlereview_id)
             for form,ts in zip(formset.forms, ts_list):
                 accepted = form.cleaned_data['accepted']
-                tr = TranslationReview(user=request.user,
-                                       translated_sentence=ts,
-                                       accepted=accepted,
-                                       review_date=datetime.now(),
-                                       status=FINISHED)
-                tr.save()
+                segment_id = form.cleaned_data['segment_id']
+                print 'JD acc : %s' % accepted
+                print 'JD seg : %s' % segment_id
+                print 'JD aid : %s' % articlereview
+                sr = SentenceReview(translated_sentence=ts,
+                                    articlereview=articlereview,
+                                    accepted=accepted,
+                                    review_date=datetime.now(),
+                                    segment_id=segment_id,
+                                    status=FINISHED)
+                sr.save()
         return HttpResponseRedirect(reverse(reviewable_article_list))
     else:
-        initial_ts_set = [{'translated_sentences': s} for s in ts_list]
+        ar = ArticleReview()
+        ar.translated_by = request.user.username
+        sr_list = ar.bootstrap(article)
+        initial_ts_set = [{'translated_sentence': s,
+                           'articlereview': s.articlereview.id,
+                           'segment_id': s.segment_id} for s in sr_list]
+        print initial_ts_set
         formset = TranslatedSentenceSet(initial=initial_ts_set)
 
     # Change label to show sentence

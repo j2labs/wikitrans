@@ -28,6 +28,7 @@ COMPETENCY_RATING = (
 
 ENGLISH = 'en'
 URDU = 'ur'
+HINDI = 'hi'
 SPANISH = 'es'
 GERMAN = 'de'
 FRENCH = 'fr'
@@ -35,6 +36,7 @@ CZECH = 'cs'
 LANGUAGE_CHOICES = (
     (ENGLISH, 'English'),
     (URDU, 'Urdu'),
+    (HINDI, 'Hindi'),
     (SPANISH, 'Spanish'),
     (GERMAN, 'German'),
     (FRENCH, 'French'),

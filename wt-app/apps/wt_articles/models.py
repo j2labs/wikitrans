@@ -15,7 +15,7 @@ from urllib import quote_plus, unquote_plus
 
 # Generic relation to mturk_manager
 from django.contrib.contenttypes import generic
-from mturk_manager.models import HITItem, AssignmentItem
+from mturk_manager.models import TaskItem, HITItem, AssignmentItem
 
 if "notification" in settings.INSTALLED_APPS:
     from notification import models as notification
@@ -40,37 +40,42 @@ class SourceArticle(models.Model):
                                 max_length=2,
                                 choices=LANGUAGE_CHOICES)
     #version = models.IntegerField(_('Version')) # @@@ try django-versioning
-    timestamp = models.DateTimeField(_('Import Date'))
+    timestamp = models.DateTimeField(_('Import Date'), default=datetime.now())
     doc_id = models.CharField(_('Document ID'), max_length=512)
     source_text = models.TextField(_('Source Text'))
     sentences_processed = models.BooleanField(_('Sentences Processed'))
 
     # hook into mturk manager
-    hits = generic.GenericRelation(HITItem)
+    #hits = generic.GenericRelation(HITItem)
+    hits = generic.GenericRelation(TaskItem)
 
     def __unicode__(self):
         return u"%s :: %s" % (self.title, self.doc_id)
 
-    def save(self):
-        sentences = list()
-        segment_id = 0
-        soup = BeautifulSoup(self.source_text)
-        sentence_splitter = determine_splitter(self.language)
-        # initial save for foriegn key based saves to work
-        # save should occur after sent_detector is loaded
-        super(SourceArticle, self).save()
-        for p in soup.findAll('p'):
-            only_p = p.findAll(text=True)
-            p_text = ''.join(only_p)
-            for sentence in sentence_splitter(p_text.strip()):
-                s = SourceSentence(article=self, text=sentence, segment_id=segment_id)
-                segment_id += 1
+    def save(self, manually_splitting=False):
+        if manually_splitting:
+            print 'woo'
+        else:
+            sentences = list()
+            segment_id = 0
+            soup = BeautifulSoup(self.source_text)
+            sentence_splitter = determine_splitter(self.language)
+            # initial save for foriegn key based saves to work
+            # save should occur after sent_detector is loaded
+            super(SourceArticle, self).save()
+            for p in soup.findAll('p'):
+                only_p = p.findAll(text=True)
+                p_text = ''.join(only_p)
+                for sentence in sentence_splitter(p_text.strip()):
+                    s = SourceSentence(article=self, text=sentence, segment_id=segment_id)
+                    segment_id += 1
+                    s.save()
+                s.end_of_paragraph = True
                 s.save()
-            s.end_of_paragraph = True
-            s.save()
-        self.sentences_processed = True
+            self.sentences_processed = True
+        print 'James :: %s' % self
         super(SourceArticle, self).save()
-
+    
     def get_absolute_url(self):
         return '/articles/source/%s/%s/%s' % (self.language,
                                               quote_plus(self.title),
@@ -116,7 +121,7 @@ class TranslatedSentence(models.Model):
     translated_by = models.CharField(_('Translated by'), blank=True, max_length=255)
     language = models.CharField(_('Language'), blank=True, max_length=2)
     translation_date = models.DateTimeField(_('Import Date'))
-    best = models.BooleanField(_('Best sentence'))
+    approved = models.BooleanField(_('Approved'), default=False)
     end_of_paragraph = models.BooleanField(_('Paragraph closer'))
 
     class Meta:
@@ -134,6 +139,7 @@ class TranslatedArticle(models.Model):
                                 max_length=2,
                                 choices=LANGUAGE_CHOICES)
     sentences = models.ManyToManyField(TranslatedSentence)
+    approved = models.BooleanField(_('Approved'), default=False)
 
     def set_sentences(self, translated_sentences):
         source_sentences = self.article.sourcesentence_set.order_by('segment_id')
