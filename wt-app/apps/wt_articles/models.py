@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.utils.encoding import iri_to_uri
 from django.conf import settings
 from django.contrib.auth.models import User
 
@@ -77,16 +78,18 @@ class SourceArticle(models.Model):
         super(SourceArticle, self).save()
     
     def get_absolute_url(self):
-        return '/articles/source/%s/%s/%s' % (self.language,
-                                              quote_plus(self.title),
-                                              self.id)
+        url = '/articles/source/%s/%s/%s' % (self.language,
+                                             quote_plus(self.title),
+                                             self.id)
+        return iri_to_uri(url)
 
     def get_relative_url(self, lang_string=None):
         if lang_string == None:
             lang_string = self.language
-        return '%s/%s/%s' % (lang_string,
-                             quote_plus(self.title),
-                             self.id)
+        url = '%s/%s/%s' % (lang_string,
+                            quote_plus(self.title),
+                            self.id)
+        return iri_to_uri(url)
     
 
 class SourceSentence(models.Model):
@@ -163,17 +166,19 @@ class TranslatedArticle(models.Model):
         source_lang = self.article.language
         target_lang = self.language
         lang_pair = "%s-%s" % (source_lang, target_lang)
-        return '/articles/translated/%s/%s/%s' % (lang_pair,
-                                                  quote_plus(self.title),
-                                                  self.id)
+        url = '/articles/translated/%s/%s/%s' % (lang_pair,
+                                                 quote_plus(self.title),
+                                                 self.id)
+        return iri_to_uri(url)
 
     def get_relative_url(self):
         source_lang = self.article.language
         target_lang = self.language
         lang_pair = "%s-%s" % (source_lang, target_lang)
-        return '%s/%s/%s' % (lang_pair,
-                             quote_plus(self.title),
-                             self.id)
+        url = '%s/%s/%s' % (lang_pair,
+                            quote_plus(self.title),
+                            self.id)
+        return iri_to_uri(url)
     
 
 class FeaturedTranslation(models.Model):

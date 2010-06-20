@@ -93,7 +93,7 @@ class Command(BaseCommand):
                     try:
                         sa.save(manually_splitting=True)
                     except UnicodeDecodeError:
-                        print 'Argh! Unicode issues...'
+                        print 'Argh! Unicode issues (1)...'
                         sa.delete()
                     break
                 
@@ -103,7 +103,7 @@ class Command(BaseCommand):
                     try:
                         self.save_sentence(sa, line[0], aid, article_id_map[aid])
                     except UnicodeDecodeError:
-                        print 'Argh! Unicode issues...'
+                        print 'Argh! Unicode issues...(2)'
                         sa.delete()
 
                     # make a new sa object
